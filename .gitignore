@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 img_database_2d/
+.DS_Store
