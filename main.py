@@ -1,6 +1,9 @@
-from fastapi import FastAPI, Request
+import sqlite3, config
+
+from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 
 
 app = FastAPI()
@@ -17,42 +20,38 @@ def index(request: Request):
 
     return templates.TemplateResponse("index.html", {"request": request, "img1": img1, "img2": img2})
 
-"""
-<html>
-    <head>
-        <title>show 2 images</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
-    </head>
-    <body>
-        <div class="ui four column doubling stackable grid container">
-            <div class="column">
-                <img class="ui fluid image" src={{img1}}>
-            </div>
-            <div class="column">
-                <img class="ui fluid image" src={{img2}}>
-              <p></p>
-            </div>
-            <div class="column">
-                <img class="ui fluid image" src={{img2}}>
-              <p></p>
-            </div>
-            <div class="column">
-              <p></p>
-              <p></p>
-            </div>
-          </div>
-          
-        this is our content
-        img1
-        <img class="ui fluid image" src={{img1}}>
-        img2
-        <img class="ui fluid image" src={{img2}}>
-        test image image
-        <img class="ui small image" src="https://www.w3schools.com/images/picture.jpg">
+
+@app.post("/add_patient")
+async def add_patient(assignment: str = Form(...)):
+    print(assignment)
+    
+# @app.post("/add_patient")
+# def add_patient(number: int = Form(...), age: int = Form(...), race: str = Form(...), ethnicity: str = Form(...)):
+#     connection = sqlite3.connect(config.DB_FILE)
+#     cursor = connection.cursor()
+
+#     cursor.execute(
+#     """
+#     INSERT INTO patient (number, age, race, ethnicity) VALUES (?, ?, ?, ?);
+#     """, (number, age, race, ethnicity)
+#     )
+#     connection.commit()
+
+#     return RedirectResponse(url=f"/patients", status_code=303)
 
 
+@app.get("/patients")
+def patients(request: Request):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
 
-    </body>
-</html>
-"""
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM patient
+                   """)
+    
+    patients = cursor.fetchall()
+
+    return templates.TemplateResponse("patients.html", {"request": request, "patients": patients})
