@@ -3,8 +3,9 @@ import sqlite3, config
 from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 
+import logging
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -20,10 +21,37 @@ def index(request: Request):
 
     return templates.TemplateResponse("index.html", {"request": request, "img1": img1, "img2": img2})
 
+@app.get("/home", response_class=HTMLResponse)
+def write_home(request: Request):
+    return templates.TemplateResponse("add_patient.html", {"request": request})
 
-@app.post("/add_patient")
-async def add_patient(assignment: str = Form(...)):
-    print(assignment)
+        # <h1>This is the home page</h1>
+        # <h2>USERNAME = test</h2>
+
+        # <form action="/submitform" method="post">
+        #     <input type="text" name="assignment">
+        #     <input type="text" name="assignment2">
+        #     <input type="submit">
+        # </form>
+    
+@app.post("/submitform")
+async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity: str = Form(...), age: int = Form(...)):
+    #TODO: write to database, use logging
+    connection = sqlite3.connect(config.DB_FILE)
+    cursor = connection.cursor()
+
+    cursor.execute(
+      """
+      INSERT INTO patient (number, age, race, ethnicity) VALUES (?, ?, ?, ?);
+      """, (number, age, race, ethnicity)
+      )
+    
+    connection.commit()
+
+    logging.info(f"Insert number={number}, race={race}, ethnicity={ethnicity}, age={age}")
+    # print(number, race, ethnicity, age)
+
+    return RedirectResponse(url="/patients", status_code=303)
     
 # @app.post("/add_patient")
 # def add_patient(number: int = Form(...), age: int = Form(...), race: str = Form(...), ethnicity: str = Form(...)):
