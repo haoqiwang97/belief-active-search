@@ -9,6 +9,7 @@
     <table class="ui striped table">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Number</th>
                 <th>Age</th>
                 <th>Race</th>
@@ -18,6 +19,7 @@
         <tbody>
             {% for patient in patients %}
             <tr>
+                <td>{{ patient.id }}</td>
                 <td>{{ patient.number }}</td>
                 <td>{{ patient.age }}</td>
                 <td>{{ patient.race }}</td>
