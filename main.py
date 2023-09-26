@@ -1,3 +1,4 @@
+# uvicorn main:app --reload 
 import sqlite3, config
 
 from fastapi import FastAPI, Request, Form
@@ -10,29 +11,21 @@ import logging
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# app.mount("/img_database_2d", StaticFiles(directory="./img_database_2d"), name="img_database_2d")
+app.mount("/img_database_2d", StaticFiles(directory="./img_database_2d"), name="img_database_2d")
+app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
 
-@app.get('/')
-def index(request: Request):
-    # return {"Hello": "World"}
-    img1 = "https://www.w3schools.com/images/picture.jpg" #"/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png"
-    img2 = "https://www.w3schools.com/images/w3schools_green.jpg" #"/img_database_2d/13589_3D_166v2_6M_110211_UprightHH1_trim_clean_snapshot_noborder.png"
+@app.get('/trial')
+def trial(request: Request):
     # read image to memory
+    # todo: can do it without mount?
+    img1 = "/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/picture.jpg" #
+    img2 = "/img_database_2d/13589_3D_166v2_6M_110211_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/w3schools_green.jpg" #
+    pred = "/temporary/search.png"
+    return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred})
 
-    return templates.TemplateResponse("index.html", {"request": request, "img1": img1, "img2": img2})
-
-@app.get("/home", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 def write_home(request: Request):
     return templates.TemplateResponse("add_patient.html", {"request": request})
-
-        # <h1>This is the home page</h1>
-        # <h2>USERNAME = test</h2>
-
-        # <form action="/submitform" method="post">
-        #     <input type="text" name="assignment">
-        #     <input type="text" name="assignment2">
-        #     <input type="submit">
-        # </form>
     
 @app.post("/submitform")
 async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity: str = Form(...), age: int = Form(...)):
@@ -52,21 +45,6 @@ async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity:
     # print(number, race, ethnicity, age)
 
     return RedirectResponse(url="/patients", status_code=303)
-    
-# @app.post("/add_patient")
-# def add_patient(number: int = Form(...), age: int = Form(...), race: str = Form(...), ethnicity: str = Form(...)):
-#     connection = sqlite3.connect(config.DB_FILE)
-#     cursor = connection.cursor()
-
-#     cursor.execute(
-#     """
-#     INSERT INTO patient (number, age, race, ethnicity) VALUES (?, ?, ?, ?);
-#     """, (number, age, race, ethnicity)
-#     )
-#     connection.commit()
-
-#     return RedirectResponse(url=f"/patients", status_code=303)
-
 
 @app.get("/patients")
 def patients(request: Request):
