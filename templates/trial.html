@@ -30,30 +30,31 @@
 
         <div class="row">
             <div class="column">
-                <div class="ui three column grid">
-                    <div class="column">
-                        <a class="fluid ui button" tabindex="0">
-                            <img class="ui fluid image" src={{img1}} alt="img1left">
-                        </a>
-                        <!-- <button type="submit">
-                            <img src={{img1}} alt="img1left" border="0"/>
-                        </button> -->
-                        <!-- <button id="close-image"><img class="ui fluid image" src={{img1}}></button> -->
-                    </div>
-                    <div class="column">
-                        <a class="fluid ui button" tabindex="0">
-                            <img class="ui fluid image" src={{img2}} alt="img2right">
-                        </a>
-                    </div>
-                    <div class="column">
-                        <img class="ui fluid image" src={{pred}} alt="prediction">
-                        <div class="sentences">
-                            <p>Estimation (x, y)</p>
-                            <p>Coordinate: (0.20, -0.23)</p>
-                            <p>Variation: (0.19, 0.21)</p>
+                <form action="/submit-trial" method="post">
+                    <div class="ui three column grid">
+                        <div class="column">
+                            <button class="fluid ui button" type="submit" name="selected_image" value="img1left">
+                                <img class="ui fluid image" src={{img1}} alt="img1left">
+                            </button>
+                            <!-- <a class="fluid ui button" tabindex="0" id="button1">
+                                <img class="ui fluid image" src={{img1}} alt="img1left" id="img1">
+                            </a> -->
+                        </div>
+                        <div class="column">
+                            <button class="fluid ui button" type="submit" name="selected_image" value="img2right">
+                                <img class="ui fluid image" src={{img2}} alt="img2right" id="img2">
+                            </button>
+                        </div>
+                        <div class="column">
+                            <img class="ui fluid image" src={{pred}} alt="prediction">
+                            <div class="sentences">
+                                <p>Estimation (x, y)</p>
+                                <p>Coordinate: (0.20, -0.23)</p>
+                                <p>Variation: (0.19, 0.21)</p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
