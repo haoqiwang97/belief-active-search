@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, HTMLResponse
 
 import logging
+from datetime import datetime
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -22,6 +23,36 @@ def trial(request: Request):
     img2 = "/img_database_2d/13589_3D_166v2_6M_110211_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/w3schools_green.jpg" #
     pred = "/temporary/search.png"
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred})
+
+@app.post("/submit-trial")
+async def submit_trial(selected_image: str = Form(...)):
+    experiment_id = 1
+    round = 2
+    # todo: read database to know which images are shown?
+    img1 = 2
+    img2 = 3
+    if selected_image == "img1left":
+        print("Button clicked: img1left")
+        selection = img1
+    else:
+        print("Button clicked: img2right")
+        selection = img2
+
+    # write to database
+    connection = sqlite3.connect(config.DB_FILE)
+    cursor = connection.cursor()
+    
+    cursor.execute(
+    """
+    INSERT INTO trials (experiment_id, round, img1, img2, selection, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """, (experiment_id, round, img1, img2, selection, 
+          datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+          0.20, -0.23, 0.19, 0.21)
+    )
+
+    connection.commit()
+
+    return RedirectResponse(url="/trial", status_code=303)
 
 @app.get("/", response_class=HTMLResponse)
 def write_home(request: Request):
