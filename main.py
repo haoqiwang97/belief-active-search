@@ -15,10 +15,11 @@ import pandas as pd
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-app.mount("/img_database_2d", StaticFiles(directory="./img_database_2d"), name="img_database_2d")
+img_mount_path = "/img_database_2d"
+app.mount(img_mount_path, StaticFiles(directory="./img_database_2d"), name="img_database_2d")
 app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
 
-def random_select() -> tuple[str, str]:
+def read_imgdb() -> pd.DataFrame:
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
 
@@ -33,12 +34,17 @@ def random_select() -> tuple[str, str]:
 
     column_names = [description[0] for description in cursor.description]
     df = pd.DataFrame(imgdb, columns=column_names)
+    return df
+
+
+def random_select() -> tuple[str, str]:
+    df = read_imgdb()
 
     # random select 2 images
     img1, img2 = df.sample(n=2)['img_name'].tolist()
 
-    img1 = '/img_database_2d/' + img1
-    img2 = '/img_database_2d/' + img2
+    img1 = img_mount_path + '/' + img1
+    img2 = img_mount_path + '/' + img2
 
     # also write to trials table?
     return img1, img2
@@ -66,17 +72,21 @@ def trial(request: Request):
 async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), img2: str = Form(...)):
     experiment_id = 1
     round = 2
-    # todo: read database to know which images are shown?
-    # img1 = 2
-    # img2 = 3
-    print(img1, img2)
-    # todo: name to img_id
+
+    img1 = img1[len(img_mount_path)+1: ]
+    img2 = img2[len(img_mount_path)+1: ]
+
+    # name to img_id
+    df = read_imgdb()
+    img1_id = df.loc[df['img_name'] == img1, 'img_id'].item()
+    img2_id = df.loc[df['img_name'] == img2, 'img_id'].item()
+ 
     if selected_image == "img1left":
         print("Button clicked: img1left")
-        selection = img1
+        select_id = img1_id
     else:
         print("Button clicked: img2right")
-        selection = img2
+        select_id = img2_id
 
     # write to database
     connection = sqlite3.connect(config.DB_FILE)
@@ -84,12 +94,13 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
     
     cursor.execute(
     """
-    INSERT INTO trials (experiment_id, round, img1, img2, selection, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    """, (experiment_id, round, img1, img2, selection, 
+    INSERT INTO trials (experiment_id, round, img1_id, img2_id, select_id, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """, (experiment_id, round, img1_id, img2_id, select_id, 
           datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
           0.20, -0.23, 0.19, 0.21)
     )
 
+    # todo: update experiments round count
     connection.commit()
 
     return RedirectResponse(url="/trial", status_code=303)
