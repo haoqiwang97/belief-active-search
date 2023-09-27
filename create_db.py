@@ -160,4 +160,80 @@ FOREIGN KEY(experiment_id) REFERENCES experiments(id)
 # """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', 0.20, -0.23, 0.19, 0.21)
 # )
 
+# perceptual_map
+cursor.execute(
+"""
+CREATE TABLE IF NOT EXISTS perceptual_map (
+id INTEGER PRIMARY KEY,
+imgdb_img_id INTEGER NOT NULL UNIQUE,
+x FLOAT NOT NULL,
+y FLOAT NOT NULL
+);
+"""
+)
+
+# import pandas as pd
+# import os
+
+# perceptual_map = pd.read_csv(os.path.join(os.getcwd(), 'data/best_embedding_2023-08-31.csv'), header=None)
+# for index, row in perceptual_map.iterrows():
+#     cursor.execute(
+#     """
+#     INSERT INTO perceptual_map (imgdb_img_id, x, y) VALUES (?, ?, ?);
+#     """, (index, row[0], row[1])
+#     )
+
+# imgdb
+cursor.execute(
+"""
+CREATE TABLE IF NOT EXISTS imgdb (
+id INTEGER PRIMARY KEY,
+img_id INTEGER NOT NULL UNIQUE,
+img_name TEXT NOT NULL,
+participant_number INTEGER NOT NULL,
+new_race TEXT NOT NULL,
+age INTEGER NOT NULL,
+bmi FLOAT NOT NULL,
+days_since_recon INTEGER NOT NULL,
+breast_state TEXT NOT NULL
+);
+"""
+)
+
+# import pandas as pd
+# # read data
+# img_num_map = pd.read_csv("./data/img_num_map.csv").query('img_id < 10000')
+
+# # extract participant number, only need first 3 numbers
+# img_num_map_participant_number = img_num_map['img_name'].str.split('_', expand=True).iloc[:, 2].str[:3].astype(int)
+# img_num_map['img_name_participant'] = img_num_map_participant_number
+
+# img_base = pd.read_csv("./data/20220801_process_checkpoint_ps.csv")
+
+# # breast state cluster
+# breast_states_cluster = (pd.read_csv("./data/breast_states_clusters.csv").loc[:, ['ImageFrom', 'cluster']].
+#                          rename(columns={'cluster': 'BREAST_STATE_CLUSTER'}))
+
+# # merge df, drop columns, change column types
+# df_master = (img_base
+#              .pipe(pd.merge, img_num_map, how='left', left_on='PARTICIPANT_NUMBER', right_on='img_name_participant')
+#              .pipe(pd.merge, breast_states_cluster, how='left', left_on='BREAST_STATE', right_on='ImageFrom')
+#              .pipe(pd.DataFrame.drop, columns=["FILE_NAME", "IMAGE_ID", "DOWNLOAD", "PROCESS", "N_3D_IMAGES",
+#                                                "VISIT_NUMBER", "IMG_ID", "SURGEON_MARKING", "FILLHOLES", "TATTOO",
+#                                                "NEED_PS", "PS_DATE", "img_name_participant", "img_relative_path", 
+#                                                "ImageFrom", "img_path"])
+#              .pipe(pd.DataFrame.astype, {'NEW_RACE': 'category', 'BREAST_STATE': 'category',
+#                                          'AGE_CATEGORY': 'category', 'BMI_CATEGORY': 'category',
+#                                          'DAYS_SINCE_RECON_CATEGORY': 'category', 'BREAST_STATE_CLUSTER': 'category'})
+#              )
+
+# df = df_master.copy()
+
+# for index, row in df.iterrows():
+#     cursor.execute(
+#     """
+#     INSERT INTO imgdb (img_id, img_name, participant_number, new_race, age, bmi, days_since_recon, breast_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+#     """, (row['img_id'], row['img_name'], row['PARTICIPANT_NUMBER'], row['NEW_RACE'], row['AGE'], row['BMI'], row['DAYS_SINCE_RECON'], row['BREAST_STATE'])
+#     )
+
 connection.commit()
