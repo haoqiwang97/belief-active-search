@@ -141,9 +141,9 @@ CREATE TABLE IF NOT EXISTS trials (
 id INTEGER PRIMARY KEY,
 experiment_id INTEGER NOT NULL,
 round INTEGER NOT NULL,
-img1 INTEGER NOT NULL,
-img2 INTEGER NOT NULL,
-selection INTEGER NOT NULL,
+img1_id INTEGER NOT NULL,
+img2_id INTEGER NOT NULL,
+select_id INTEGER NOT NULL,
 timepoint TIMESTAMP NOT NULL,
 meanx FLOAT NOT NULL,
 meany FLOAT NOT NULL,
@@ -156,7 +156,7 @@ FOREIGN KEY(experiment_id) REFERENCES experiments(id)
 
 # cursor.execute(
 # """
-# INSERT INTO trials (experiment_id, round, img1, img2, selection, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+# INSERT INTO trials (experiment_id, round, img1_id, img2_id, select_id, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 # """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', 0.20, -0.23, 0.19, 0.21)
 # )
 
