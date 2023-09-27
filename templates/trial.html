@@ -33,6 +33,7 @@
                 <form action="/submit-trial" method="post">
                     <div class="ui three column grid">
                         <div class="column">
+                            <input type="hidden" name="img1" value="{{img1}}">
                             <button class="fluid ui button" type="submit" name="selected_image" value="img1left">
                                 <img class="ui fluid image" src={{img1}} alt="img1left">
                             </button>
@@ -41,6 +42,7 @@
                             </a> -->
                         </div>
                         <div class="column">
+                            <input type="hidden" name="img2" value="{{img2}}">
                             <button class="fluid ui button" type="submit" name="selected_image" value="img2right">
                                 <img class="ui fluid image" src={{img2}} alt="img2right" id="img2">
                             </button>
