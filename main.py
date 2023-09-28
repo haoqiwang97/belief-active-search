@@ -54,6 +54,96 @@ def active_select():
     pass
 
 
+@app.get('/add-patient')
+def add_patient():
+    pass
+
+@app.post("/submit-patient")
+async def submit_patient(number: int = Form(...), language: str = Form(...)):
+    connection = sqlite3.connect(config.DB_FILE)
+    cursor = connection.cursor()
+
+    cursor.execute(
+      """
+      INSERT INTO patients (number, language) VALUES (?, ?);
+      """, (number, language)
+      )
+    
+    connection.commit()
+
+    logging.info(f"Insert number={number}, language={language}")
+    # print(number, race, ethnicity, age)
+
+    return RedirectResponse(url="/patientslist", status_code=303)
+
+@app.get("/patientslist")
+def patients(request: Request):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM patients
+                   """)
+    
+    patients = cursor.fetchall()
+
+    return templates.TemplateResponse("patientslist.html", {"request": request, "patients": patients})
+
+@app.post("/submit-patient")
+async def submit_patient(number: int = Form(...), language: str = Form(...)):
+    connection = sqlite3.connect(config.DB_FILE)
+    cursor = connection.cursor()
+
+    cursor.execute(
+      """
+      INSERT INTO patients (number, language) VALUES (?, ?);
+      """, (number, language)
+      )
+    
+    connection.commit()
+
+    logging.info(f"Insert number={number}, language={language}")
+    # print(number, race, ethnicity, age)
+
+    return RedirectResponse(url="/patientslist", status_code=303)
+
+@app.get("/providerslist")
+def patients(request: Request):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM providers
+                   """)
+    
+    providers = cursor.fetchall()
+
+    return templates.TemplateResponse("providerslist.html", {"request": request, "providers": providers})
+
+@app.post("/submit-provider")
+async def submit_provider(number: int = Form(...), name: str = Form(...)):
+    connection = sqlite3.connect(config.DB_FILE)
+    cursor = connection.cursor()
+
+    cursor.execute(
+      """
+      INSERT INTO providers (number, name) VALUES (?, ?);
+      """, (number, name)
+      )
+    
+    connection.commit()
+
+    logging.info(f"Insert number={number}, name={name}")
+    # print(number, race, ethnicity, age)
+
+    return RedirectResponse(url="/providerslist", status_code=303)
+
 @app.get('/trial')
 def trial(request: Request):
     # read image to memory
@@ -70,6 +160,7 @@ def trial(request: Request):
 
 @app.post("/submit-trial")
 async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), img2: str = Form(...)):
+    # get experiment id, round_count
     experiment_id = 1
     round = 2
 
@@ -108,7 +199,23 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
 @app.get("/", response_class=HTMLResponse)
 def write_home(request: Request):
     return templates.TemplateResponse("add_patient.html", {"request": request})
+
+@app.get("/patients")
+def patients(request: Request):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM patient
+                   """)
     
+    patients = cursor.fetchall()
+
+    return templates.TemplateResponse("patients.html", {"request": request, "patients": patients})
+
 @app.post("/submitform")
 async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity: str = Form(...), age: int = Form(...)):
     #TODO: write to database, use logging
@@ -128,18 +235,3 @@ async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity:
 
     return RedirectResponse(url="/patients", status_code=303)
 
-@app.get("/patients")
-def patients(request: Request):
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-                   SELECT *
-                   FROM patient
-                   """)
-    
-    patients = cursor.fetchall()
-
-    return templates.TemplateResponse("patients.html", {"request": request, "patients": patients})

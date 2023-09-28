@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1><a href="/">Index</a>
+    <i class="angle double right icon"></i>
+</h1>
+
+    <h2>Patients in database</h2>
+    <table class="ui striped table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Number</th>
+                <th>Language</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td>{{ patient.id }}</td>
+                <td>{{ patient.number }}</td>
+                <td>{{ patient.language }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Add a new patient</h2>
+    <form class="ui form" action="/submit-patient" method="post">
+        <div class="field">
+            <label>Number</label>
+            <div class="two fields">
+                <div class="field">
+                    <input type="number" name="number" placeholder="1">
+                </div>
+            </div>
+        </div>
+        <div class="two fields">
+            <div class="field">
+                <label>Language</label>
+                <select class="ui fluid dropdown" name="language">
+                    <option value=""></option>
+                    <option value="English">English</option>
+                    <option value="Spanish">Spanish</option>
+                </select>
+            </div>
+        </div>
+
+        <input type="submit">
+    </form>
+{% endblock %}
