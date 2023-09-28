@@ -175,7 +175,7 @@ def participants(request: Request):
     return templates.TemplateResponse("participantslist.html", {"request": request, "patients": patients, "providers": providers, "participants": participants})
 
 @app.post("/submit-participant")
-async def submit_participant(request: Request, selected_patient: int = Form(...), selected_provider: int = Form(...), type: str = Form(...)):
+async def submit_participant(selected_patient: int = Form(...), selected_provider: int = Form(...), type: str = Form(...)):
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
 
@@ -189,10 +189,7 @@ async def submit_participant(request: Request, selected_patient: int = Form(...)
 
     return RedirectResponse(url="/participantslist", status_code=303)
 
-@app.get("/visitslist")
-def visits(request: Request):    
-    participants = read_participants()
-
+def read_visits():
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
 
@@ -204,11 +201,16 @@ def visits(request: Request):
                    """)
     
     visits = cursor.fetchall()
+    return visits
 
+@app.get("/visitslist")
+def visits(request: Request):    
+    participants = read_participants()
+    visits = read_visits()
     return templates.TemplateResponse("visitslist.html", {"request": request, "participants": participants, "visits": visits})
 
 @app.post("/submit-visit")
-async def submit_visit(request: Request, selected_participant: int = Form(...), visit_date: date = Form(...), next_surgery: str = Form(...)):
+async def submit_visit(selected_participant: int = Form(...), visit_date: date = Form(...), next_surgery: str = Form(...)):
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
 
@@ -222,6 +224,56 @@ async def submit_visit(request: Request, selected_participant: int = Form(...), 
     connection.commit()
 
     return RedirectResponse(url="/visitslist", status_code=303)
+
+def read_experiments():
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM experiments
+                   """)
+    
+    experiments = cursor.fetchall()
+    return experiments
+
+def read_table(table_name):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute(f"SELECT * FROM {table_name}")
+    
+    table = cursor.fetchall()
+    return table
+
+@app.get("/experimentslist")
+def experiemnts(request: Request):
+    visits = read_visits()
+    experiments = read_experiments()
+    parameters = read_table('parameters') # todo: use this function instead of defining repeats
+    return templates.TemplateResponse("experimentslist.html", {"request": request, "visits": visits, "experiments": experiments, "parameters": parameters})
+
+@app.post("/submit-experiment")
+async def submit_experiment(selected_visit: int = Form(...), selected_parameter: int = Form(...)):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute(
+    """
+    INSERT INTO experiments (visit_id, parameter_id, round_count) VALUES (?, ?, ?);
+    """, (selected_visit, selected_parameter, 0)
+    )
+
+    connection.commit()
+
+    return RedirectResponse(url="/experimentslist", status_code=303)
+
 
 @app.get('/trial')
 def trial(request: Request):
