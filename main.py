@@ -53,28 +53,9 @@ def random_select() -> tuple[str, str]:
 def active_select():
     pass
 
-
-@app.get('/add-patient')
-def add_patient():
-    pass
-
-@app.post("/submit-patient")
-async def submit_patient(number: int = Form(...), language: str = Form(...)):
-    connection = sqlite3.connect(config.DB_FILE)
-    cursor = connection.cursor()
-
-    cursor.execute(
-      """
-      INSERT INTO patients (number, language) VALUES (?, ?);
-      """, (number, language)
-      )
-    
-    connection.commit()
-
-    logging.info(f"Insert number={number}, language={language}")
-    # print(number, race, ethnicity, age)
-
-    return RedirectResponse(url="/patientslist", status_code=303)
+@app.get("/home", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
 
 @app.get("/patientslist")
 def patients(request: Request):
@@ -106,7 +87,6 @@ async def submit_patient(number: int = Form(...), language: str = Form(...)):
     connection.commit()
 
     logging.info(f"Insert number={number}, language={language}")
-    # print(number, race, ethnicity, age)
 
     return RedirectResponse(url="/patientslist", status_code=303)
 
@@ -143,6 +123,70 @@ async def submit_provider(number: int = Form(...), name: str = Form(...)):
     # print(number, race, ethnicity, age)
 
     return RedirectResponse(url="/providerslist", status_code=303)
+
+def read_patients():
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM patients
+                   """)
+    
+    patients = cursor.fetchall()
+    return patients
+
+def read_providers():
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM providers
+                   """)
+    
+    providers = cursor.fetchall()
+    return providers
+
+def read_participants():
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM participants
+                   """)
+    
+    participants = cursor.fetchall()
+    return participants
+
+@app.get("/participantslist")
+def participants(request: Request):    
+    patients = read_patients()
+    providers = read_providers()
+    participants = read_participants()
+    return templates.TemplateResponse("participantslist.html", {"request": request, "patients": patients, "providers": providers, "participants": participants})
+
+@app.post("/submit-participant")
+async def submit_participant(request: Request, selected_patient: int = Form(...), selected_provider: int = Form(...), type: str = Form(...)):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+    cursor.execute(
+    """
+    INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
+    """, (type, selected_patient, selected_provider)
+    )
+    connection.commit()
+
+    return RedirectResponse(url="/participantslist", status_code=303)
 
 @app.get('/trial')
 def trial(request: Request):
