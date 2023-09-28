@@ -236,4 +236,29 @@ breast_state TEXT NOT NULL
 #     """, (row['img_id'], row['img_name'], row['PARTICIPANT_NUMBER'], row['NEW_RACE'], row['AGE'], row['BMI'], row['DAYS_SINCE_RECON'], row['BREAST_STATE'])
 #     )
 
+# parameters
+cursor.execute(
+"""
+CREATE TABLE IF NOT EXISTS parameters (
+id INTEGER PRIMARY KEY,
+algorithm TEXT NOT NULL,
+k float NOT NULL,
+response_model TEXT NOT NULL,
+probability_model TEXT NOT NULL
+);
+"""
+)
+
+# cursor.execute(
+# """
+# INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
+# """, ("random pair selection", -1, "na", "na")
+# )
+
+# cursor.execute(
+# """
+# INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
+# """, ("active pair selection", 1.204, "CONSTANT", "logit")
+# )
+
 connection.commit()
