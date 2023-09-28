@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 
 import logging
 from datetime import datetime
+from datetime import date  # Import the date type
 
 import pandas as pd
 
@@ -187,6 +188,40 @@ async def submit_participant(request: Request, selected_patient: int = Form(...)
     connection.commit()
 
     return RedirectResponse(url="/participantslist", status_code=303)
+
+@app.get("/visitslist")
+def visits(request: Request):    
+    participants = read_participants()
+
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM visits
+                   """)
+    
+    visits = cursor.fetchall()
+
+    return templates.TemplateResponse("visitslist.html", {"request": request, "participants": participants, "visits": visits})
+
+@app.post("/submit-visit")
+async def submit_visit(request: Request, selected_participant: int = Form(...), visit_date: date = Form(...), next_surgery: str = Form(...)):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+    cursor.execute(
+    """
+    INSERT INTO visits (participant_id, date, next_procedure) VALUES (?, ?, ?);
+    """, (selected_participant, visit_date, next_surgery)
+    )
+
+    connection.commit()
+
+    return RedirectResponse(url="/visitslist", status_code=303)
 
 @app.get('/trial')
 def trial(request: Request):
