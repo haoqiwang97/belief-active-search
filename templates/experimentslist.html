@@ -7,6 +7,9 @@
 
 <h2>Experiments in database</h2>
 <form class="ui form" action="/trial" method="GET">
+    <!-- <form class="ui form" action="/trial?selected_experiment=1&round_count=3" method="GET"> -->
+<!-- <form class="ui form" action="/trial" method="GET"> -->
+    <!-- <input type="hidden" name="selected_experiment" value="1"> -->
     <table class="ui striped table">
         <thead>
             <tr>
@@ -23,8 +26,12 @@
                 <td>{{ experiment.id }}</td>
                 <td>{{ experiment.visit_id }}</td>
                 <td>{{ experiment.parameter_id }}</td>
-                <td>{{ experiment.round_count }}</td>
-                <td><input type="radio" name="selected_experiment" value="{{ experiment.id }}"></td>
+                <!-- <td>{{ experiment.round_count }}</td> -->
+                <td>{{ number_rounds[loop.index0] }}</td>
+                <td>
+                    <input type="radio" name="selected_experiment" value="{{ experiment.id }}">
+                    <!-- <input type="hidden" name="round_count" value="{{ experiment.round_count }}"> -->
+                </td>
             </tr>
             {% endfor %}
         </tbody>

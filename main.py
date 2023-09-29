@@ -1,7 +1,7 @@
 # uvicorn main:app --reload 
 import sqlite3, config
 
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, HTMLResponse
@@ -253,9 +253,31 @@ def read_table(table_name):
 @app.get("/experimentslist")
 def experiemnts(request: Request):
     visits = read_visits()
-    experiments = read_experiments()
+    # experiments = read_experiments()
+
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM experiments
+                   """)
+    
+    experiments = cursor.fetchall()
+
+    column_names = [description[0] for description in cursor.description]
+    experiment_ids = pd.DataFrame(experiments, columns=column_names)['id'].tolist()
+    experiment_ids.sort()  # id is 1, 2, 3...
+
+    number_rounds = []
+    for experiment_id in experiment_ids:
+        cursor.execute(f"SELECT * FROM trials WHERE experiment_id = {experiment_id}")
+        number_rounds.append(len(cursor.fetchall()))
+
     parameters = read_table('parameters') # todo: use this function instead of defining repeats
-    return templates.TemplateResponse("experimentslist.html", {"request": request, "visits": visits, "experiments": experiments, "parameters": parameters})
+    return templates.TemplateResponse("experimentslist.html", {"request": request, "visits": visits, "experiments": experiments, "parameters": parameters, "number_rounds": number_rounds})
 
 @app.post("/submit-experiment")
 async def submit_experiment(selected_visit: int = Form(...), selected_parameter: int = Form(...)):
@@ -276,7 +298,11 @@ async def submit_experiment(selected_visit: int = Form(...), selected_parameter:
 
 
 @app.get('/trial')
-def trial(request: Request):
+# @app.get('/trial?selected_experiment={selected_experiment}&round_count={round_count}')
+# def trial(request: Request):
+# http://127.0.0.1:8000/trial?selected_experiment=1&round_count=3
+def trial(request: Request, selected_experiment: int = Query(...)):
+# def trial(request: Request, round_count: int = Query(...), selected_experiment: int = Query(...)):
     # read image to memory
     # todo: can do it without mount?
     # select 2 images
@@ -290,9 +316,10 @@ def trial(request: Request):
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred})
 
 @app.post("/submit-trial")
-async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), img2: str = Form(...)):
+async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), img2: str = Form(...), selected_experiment: int = Form(...)):
     # get experiment id, round_count
-    experiment_id = 1
+    experiment_id = selected_experiment#1
+    # todo: a function, get round_count by experiment_id
     round = 2
 
     img1 = img1[len(img_mount_path)+1: ]
@@ -325,7 +352,8 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
     # todo: update experiments round count
     connection.commit()
 
-    return RedirectResponse(url="/trial", status_code=303)
+    return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
+# todo: submit trial goes to http://127.0.0.1:8000/trial, but should go to http://127.0.0.1:8000/trial?selected_experiment=1, submit_trial needs to know selected_experiment
 
 @app.get("/", response_class=HTMLResponse)
 def write_home(request: Request):
