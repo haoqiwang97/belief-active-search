@@ -23,14 +23,15 @@
     <div class="ui grid container">
         <div class="row">
             <div class="column">
-                <h1 class="ui header">Which photograph is more similar to what you expect to look like after the next
-                    surgery or procedure?</h1>
+                <h1 class="ui header">Which photograph is more similar to what you expect to look like after the next surgery or procedure?</h1>
             </div>
         </div>
 
         <div class="row">
             <div class="column">
                 <form action="/submit-trial" method="post">
+                    <!-- Add a hidden input field for selected_experiment -->
+                    <input type="hidden" name="selected_experiment" value="{{ request.query_params.selected_experiment }}">
                     <div class="ui three column grid">
                         <div class="column">
                             <input type="hidden" name="img1" value="{{img1}}">
