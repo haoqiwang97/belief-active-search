@@ -24,11 +24,8 @@ def read_db(table_name: str):
     # read as database format
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
-
     cursor = connection.cursor()
-
     cursor.execute(f"SELECT * FROM {table_name}")
-    
     table_db = cursor.fetchall()
     return table_db
 
@@ -36,36 +33,16 @@ def read_pd(table_name: str) -> pd.DataFrame:
     # read as pandas format
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
-
     cursor = connection.cursor()
-
     cursor.execute(f"SELECT * FROM {table_name}")
-    
     table_db = cursor.fetchall()
+    
     column_names = [description[0] for description in cursor.description]
     table_pd = pd.DataFrame(table_db, columns=column_names)
     return table_pd
 
-def read_imgdb() -> pd.DataFrame:
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-                   SELECT *
-                   FROM imgdb
-                   """)
-    
-    imgdb = cursor.fetchall()
-
-    column_names = [description[0] for description in cursor.description]
-    df = pd.DataFrame(imgdb, columns=column_names)
-    return df
-
-
 def random_select() -> tuple[str, str]:
-    df = read_imgdb()
+    df = read_pd('imgdb')
 
     # random select 2 images
     img1, img2 = df.sample(n=2)['img_name'].tolist()
@@ -195,22 +172,6 @@ async def submit_visit(selected_participant: int = Form(...), visit_date: date =
 
     return RedirectResponse(url="/visitslist", status_code=303)
 
-def read_experiments():
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-                   SELECT *
-                   FROM experiments
-                   """)
-    
-    experiments = cursor.fetchall()
-    return experiments
-
-
-
 @app.get("/experimentslist")
 def experiemnts(request: Request):
     visits = read_db('visits')
@@ -269,20 +230,20 @@ def get_number_rounds(experiment_id: int):
 
     cursor = connection.cursor()
     cursor.execute(f"SELECT * FROM trials WHERE experiment_id = {experiment_id}")
-    return len(cursor.fetchall())
+    return len(cursor.fetchall()) + 1
 
 @app.post("/submit-trial")
 async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), img2: str = Form(...), selected_experiment: int = Form(...)):
-    # get experiment id, round_count
-    experiment_id = selected_experiment#1
-    # todo: a function, get round_count by experiment_id
-    round = 2
+    # get experiment_id
+    experiment_id = selected_experiment
+    # get round_count by experiment_id
+    round = get_number_rounds(experiment_id)
 
     img1 = img1[len(img_mount_path)+1: ]
     img2 = img2[len(img_mount_path)+1: ]
 
     # name to img_id
-    df = read_imgdb()
+    df = read_pd('imgdb')
     img1_id = df.loc[df['img_name'] == img1, 'img_id'].item()
     img2_id = df.loc[df['img_name'] == img2, 'img_id'].item()
  
