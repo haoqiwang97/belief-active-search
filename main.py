@@ -239,7 +239,8 @@ def read_experiments():
     experiments = cursor.fetchall()
     return experiments
 
-def read_table(table_name):
+def read_db(table_name: str):
+    # read as database format
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
 
@@ -247,37 +248,38 @@ def read_table(table_name):
 
     cursor.execute(f"SELECT * FROM {table_name}")
     
-    table = cursor.fetchall()
-    return table
+    table_db = cursor.fetchall()
+    return table_db
 
-@app.get("/experimentslist")
-def experiemnts(request: Request):
-    visits = read_visits()
-    # experiments = read_experiments()
-
+def read_pd(table_name: str) -> pd.DataFrame:
+    # read as pandas format
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
 
     cursor = connection.cursor()
 
-    cursor.execute("""
-                   SELECT *
-                   FROM experiments
-                   """)
+    cursor.execute(f"SELECT * FROM {table_name}")
     
-    experiments = cursor.fetchall()
-
+    table_db = cursor.fetchall()
     column_names = [description[0] for description in cursor.description]
-    experiment_ids = pd.DataFrame(experiments, columns=column_names)['id'].tolist()
+    table_pd = pd.DataFrame(table_db, columns=column_names)
+    return table_pd
+
+@app.get("/experimentslist")
+def experiemnts(request: Request):
+    visits = read_visits()
+
+    experiments = read_db('experiments')
+    experiments_pd = read_pd('experiments')
+    experiment_ids = experiments_pd['id'].tolist()
     experiment_ids.sort()  # id is 1, 2, 3...
 
-    number_rounds = []
+    number_rounds_list = []
     for experiment_id in experiment_ids:
-        cursor.execute(f"SELECT * FROM trials WHERE experiment_id = {experiment_id}")
-        number_rounds.append(len(cursor.fetchall()))
+        number_rounds_list.append(get_number_rounds(experiment_id))
 
-    parameters = read_table('parameters') # todo: use this function instead of defining repeats
-    return templates.TemplateResponse("experimentslist.html", {"request": request, "visits": visits, "experiments": experiments, "parameters": parameters, "number_rounds": number_rounds})
+    parameters = read_db('parameters') # todo: use this function instead of defining repeats
+    return templates.TemplateResponse("experimentslist.html", {"request": request, "visits": visits, "experiments": experiments, "parameters": parameters, "number_rounds_list": number_rounds_list})
 
 @app.post("/submit-experiment")
 async def submit_experiment(selected_visit: int = Form(...), selected_parameter: int = Form(...)):
@@ -314,6 +316,14 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     img1, img2 = random_select()
     pred = "/temporary/search.png"
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred})
+
+def get_number_rounds(experiment_id: int):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT * FROM trials WHERE experiment_id = {experiment_id}")
+    return len(cursor.fetchall())
 
 @app.post("/submit-trial")
 async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), img2: str = Form(...), selected_experiment: int = Form(...)):
