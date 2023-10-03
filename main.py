@@ -20,6 +20,32 @@ img_mount_path = "/img_database_2d"
 app.mount(img_mount_path, StaticFiles(directory="./img_database_2d"), name="img_database_2d")
 app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
 
+def read_db(table_name: str):
+    # read as database format
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute(f"SELECT * FROM {table_name}")
+    
+    table_db = cursor.fetchall()
+    return table_db
+
+def read_pd(table_name: str) -> pd.DataFrame:
+    # read as pandas format
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute(f"SELECT * FROM {table_name}")
+    
+    table_db = cursor.fetchall()
+    column_names = [description[0] for description in cursor.description]
+    table_pd = pd.DataFrame(table_db, columns=column_names)
+    return table_pd
+
 def read_imgdb() -> pd.DataFrame:
     connection = sqlite3.connect(config.DB_FILE)
     connection.row_factory = sqlite3.Row
@@ -125,53 +151,11 @@ async def submit_provider(number: int = Form(...), name: str = Form(...)):
 
     return RedirectResponse(url="/providerslist", status_code=303)
 
-def read_patients():
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-                   SELECT *
-                   FROM patients
-                   """)
-    
-    patients = cursor.fetchall()
-    return patients
-
-def read_providers():
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-                   SELECT *
-                   FROM providers
-                   """)
-    
-    providers = cursor.fetchall()
-    return providers
-
-def read_participants():
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-                   SELECT *
-                   FROM participants
-                   """)
-    
-    participants = cursor.fetchall()
-    return participants
-
 @app.get("/participantslist")
 def participants(request: Request):    
-    patients = read_patients()
-    providers = read_providers()
-    participants = read_participants()
+    patients = read_db('patients')
+    providers = read_db('providers')
+    participants = read_db('participants')
     return templates.TemplateResponse("participantslist.html", {"request": request, "patients": patients, "providers": providers, "participants": participants})
 
 @app.post("/submit-participant")
@@ -189,24 +173,10 @@ async def submit_participant(selected_patient: int = Form(...), selected_provide
 
     return RedirectResponse(url="/participantslist", status_code=303)
 
-def read_visits():
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-                   SELECT *
-                   FROM visits
-                   """)
-    
-    visits = cursor.fetchall()
-    return visits
-
 @app.get("/visitslist")
 def visits(request: Request):    
-    participants = read_participants()
-    visits = read_visits()
+    participants = read_db('participants')
+    visits = read_db('visits')
     return templates.TemplateResponse("visitslist.html", {"request": request, "participants": participants, "visits": visits})
 
 @app.post("/submit-visit")
@@ -239,35 +209,11 @@ def read_experiments():
     experiments = cursor.fetchall()
     return experiments
 
-def read_db(table_name: str):
-    # read as database format
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
 
-    cursor = connection.cursor()
-
-    cursor.execute(f"SELECT * FROM {table_name}")
-    
-    table_db = cursor.fetchall()
-    return table_db
-
-def read_pd(table_name: str) -> pd.DataFrame:
-    # read as pandas format
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-
-    cursor.execute(f"SELECT * FROM {table_name}")
-    
-    table_db = cursor.fetchall()
-    column_names = [description[0] for description in cursor.description]
-    table_pd = pd.DataFrame(table_db, columns=column_names)
-    return table_pd
 
 @app.get("/experimentslist")
 def experiemnts(request: Request):
-    visits = read_visits()
+    visits = read_db('visits')
 
     experiments = read_db('experiments')
     experiments_pd = read_pd('experiments')
