@@ -14,6 +14,8 @@ from datetime import date  # Import the date type
 
 import pandas as pd
 
+from typing import Tuple, Optional
+
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -43,7 +45,6 @@ def read_pd(table_name: str) -> pd.DataFrame:
     table_pd = pd.DataFrame(table_db, columns=column_names)
     return table_pd
 
-from typing import Tuple
 def random_select() -> Tuple[str, str]:
     df = read_pd('imgdb')
 
@@ -210,7 +211,6 @@ async def submit_experiment(selected_visit: int = Form(...), selected_parameter:
 
 
 import numpy as np
-from typing import Tuple, Optional
 import ast
 import json
 
@@ -397,56 +397,10 @@ class ActiveQuery():
         return indices
     
 
-@app.get('/trial')
-# @app.get('/trial?selected_experiment={selected_experiment}&round_count={round_count}')
-# def trial(request: Request):
-# http://127.0.0.1:8000/trial?selected_experiment=1&round_count=3
-def trial(request: Request, selected_experiment: int = Query(...)):
-# def trial(request: Request, round_count: int = Query(...), selected_experiment: int = Query(...)):
-    # read image to memory
-    # todo: can do it without mount?
-    # select 2 images
-    # manually select
-    img1 = "/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/picture.jpg" #
-    img2 = "/img_database_2d/13589_3D_166v2_6M_110211_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/w3schools_green.jpg" #
-    
-    # random select
-    img1, img2 = random_select()
-    pred = "/temporary/search.png"
-
-    # active select
-    # input: need experiment_id, read the database, find what images should be shown/calculate here based on previous database info, but this repeats many variables, I maybe should do all of this in submit-trial.html
-    # output: path to 2 images, plot
-
-    # get parameter by selected_experiment
-    db = Database(experiment_id=selected_experiment)
-    # initialize ActiveQuery based on given parameters
-    aq = ActiveQuery(db, 'MCMV')
-    # get next round
-    estimation = db.initial_estimate()  # maybe no need to do this? no, initialization still need?
-    query = aq.get_next_round(estimation['cov'])
-    imgdb_pd = read_pd('imgdb')
-    img1 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[0]')['img_name'].item()  # todo: item
-    img2 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[1]')['img_name'].item()  # todo: item
-
-    return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred})
-
-def get_number_rounds(experiment_id: int):
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
-
-    cursor = connection.cursor()
-    cursor.execute(f"SELECT * FROM trials WHERE experiment_id = {experiment_id}")
-    return len(cursor.fetchall())
-
-# trial('request', 1)
-
 import matplotlib.pyplot as plt
 import pickle
 import pystan
 
-# import multiprocessing
-# multiprocessing.set_start_method("fork")
 
 class BayesEstimate():
     stan_model = """
@@ -523,11 +477,12 @@ class BayesEstimate():
         # get posterior samples
         print('Start fitting...')
 
-        fit = self.sm.sampling(data=data_gen, iter=self.Niter, chains=self.Nchains, init=0)
+        fit = self.sm.sampling(data=data_gen, iter=self.Niter, chains=self.Nchains, init=0, n_jobs=1)
         W_samples = fit.extract()['W']
 
         self.W_samples = W_samples
         self.mu_W = np.mean(W_samples, 0)
+        print(f"Current estimate: {self.mu_W}")
         self.Wcov = np.cov(self.W_samples, rowvar=False)  # get covariance
 
         self.A_sel = A_sel
@@ -572,20 +527,72 @@ class BayesEstimate():
         plt.scatter(embedding[query[0], 0], embedding[query[0], 1], s=25, c='m', zorder=2)
         plt.scatter(embedding[query[1], 0], embedding[query[1], 1], s=25, c='m', zorder=2)
         # plot response
-        plt.scatter(embedding[response, 0], embedding[response, 1], s=80, facecolors='none', edgecolors='r', zorder=2)
+        # plt.scatter(embedding[response, 0], embedding[response, 1], s=80, facecolors='none', edgecolors='r', zorder=2)
 
-        print(f"Current estimate: {estimate_point}")
+        # print(f"Current estimate: {estimate_point}")
 
         plt.ion()
 
         # save plots
         import os
-        folder_name = "random_search2023-10-03"
-        plot_name = f"{folder_name}/{len([name for name in os.listdir(f'./{folder_name}')]):02d}.png"
+        folder_name = "temporary"
+        plot_name = f"{folder_name}/search.png"
         plt.savefig(plot_name, dpi=300)
 
+        app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
+
+
         # plt.pause(self.plot_pause)  # for observation
-        plt.pause(0.5)  # for observation
+        # plt.pause(0.5)  # for observation
+
+
+@app.get('/trial')
+# http://127.0.0.1:8000/trial?selected_experiment=1&round_count=3
+def trial(request: Request, selected_experiment: int = Query(...)):
+    # read image to memory
+    # todo: can do it without mount?
+    # select 2 images
+    # manually select
+    img1 = "/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/picture.jpg" #
+    img2 = "/img_database_2d/13589_3D_166v2_6M_110211_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/w3schools_green.jpg" #
+    
+    # random select
+    img1, img2 = random_select()
+    pred = "/temporary/search.png"
+
+    # active select
+    # input: need experiment_id, read the database, find what images should be shown/calculate here based on previous database info, but this repeats many variables, I maybe should do all of this in submit-trial.html
+    # output: path to 2 images, plot
+    # get parameter by selected_experiment
+    db = Database(experiment_id=selected_experiment)
+    # initialize ActiveQuery based on given parameters
+    aq = ActiveQuery(db, 'MCMV')
+    # get next round
+    estimation = db.initial_estimate()  # maybe no need to do this? no, initialization still need?
+    query = aq.get_next_round(estimation['cov'])
+    imgdb_pd = read_pd('imgdb')
+    img1 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[0]')['img_name'].item()  # todo: item
+    img2 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[1]')['img_name'].item()  # todo: item
+
+    # get coordinate
+    trials_df = read_pd('trials')
+    coordinates = trials_df.query('experiment_id == @selected_experiment').iloc[-1]
+    # print(coordinates)
+    # print(np.around(np.array(ast.literal_eval(coordinates['mean'])), decimals=3))
+
+    # app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
+    pred = "/temporary/search.png"
+    return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred, 
+                                                     "mean": np.around(np.array(ast.literal_eval(coordinates['mean'])), decimals=3), 
+                                                     "cov": np.around(np.array(ast.literal_eval(coordinates['cov'])), decimals=3)})
+
+def get_number_rounds(experiment_id: int):
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT * FROM trials WHERE experiment_id = {experiment_id}")
+    return len(cursor.fetchall())
 
 
 @app.post("/submit-trial")
@@ -619,37 +626,19 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
     # write to database
     query = (img1_id, img2_id)
     response = selected_image
+    
     estimation = be.fit(query, response)
+    be.plot(query, response)
 
     # db.update(estimation, query, response)
-    # todo: install python package
-
-    # todo: experiment_id, round, img1_id, img2_id are known in trial.html, the record should be updated, fill in meanx, meany, stdx, stdy
-    connection = sqlite3.connect(config.DB_FILE)
-    cursor = connection.cursor()
-    
-    # cursor.execute(
-    # """
-    # INSERT INTO trials (experiment_id, round, img1_id, img2_id, select_id, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    # """, (experiment_id, round, img1_id, img2_id, select_id, 
-    #       datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
-    #       0.20, -0.23, 0.19, 0.21)
-    # )
-
-    #####
-    # mean = np.array([0.08756645, 0.00019115])
-    # cov = np.array([[0.08257532, -0.00073675], [-0.00073675, 0.08365184]])
-    # a = np.array([-0.3654387, 0.01344264])
-    # tau = 0.002649889696594203
-
     connection = sqlite3.connect(config.DB_FILE)
     cursor = connection.cursor()
     cursor.execute(
     """
-    INSERT INTO newtrials (experiment_id, round, img1_id, img2_id, select_id, timepoint, mean, cov, a, tau) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    """, (experiment_id, round+1, img1_id, img2_id, select_id, '2023-04-10 10:39:37', json.dumps(estimation['mean'].tolist()), json.dumps(estimation['cov'].tolist()), json.dumps(estimation['a'].tolist()), estimation['tau'])
+    INSERT INTO trials (experiment_id, round, img1_id, img2_id, select_id, timepoint, mean, cov, a, tau) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """, (experiment_id, round+1, img1_id, img2_id, select_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), json.dumps(estimation['mean'].tolist()), json.dumps(estimation['cov'].tolist()), json.dumps(estimation['a'].tolist()), estimation['tau'])
     )
-    #####
+
     connection.commit()
 
     return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
