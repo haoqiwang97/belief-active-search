@@ -46,11 +46,11 @@ language TEXT NOT NULL
 """
 )
 
-# cursor.execute(
-# """
-# INSERT INTO patients (number, language) VALUES (?, ?);
-# """, (1, 'English')
-# )
+cursor.execute(
+"""
+INSERT INTO patients (number, language) VALUES (?, ?);
+""", (1, 'English')
+)
 
 # providers
 cursor.execute(
@@ -63,11 +63,11 @@ name TEXT NOT NULL
 """
 )
 
-# cursor.execute(
-# """
-# INSERT INTO providers (number, name) VALUES (?, ?);
-# """, (1, 'noname')
-# )
+cursor.execute(
+"""
+INSERT INTO providers (number, name) VALUES (?, ?);
+""", (1, 'Wang')
+)
 
 # participants
 cursor.execute(
@@ -84,17 +84,17 @@ UNIQUE (type, patient_id, provider_id)
 """
 )
 
-# cursor.execute(
-# """
-# INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
-# """, ('provider', 1, 1)
-# )
+cursor.execute(
+"""
+INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
+""", ('provider', 1, 1)
+)
 
-# cursor.execute(
-# """
-# INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
-# """, ('patient', 1, 1)
-# )
+cursor.execute(
+"""
+INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
+""", ('patient', 1, 1)
+)
 
 # visits
 cursor.execute(
@@ -109,11 +109,11 @@ FOREIGN KEY(participant_id) REFERENCES participants(id)
 """
 )
 
-# cursor.execute(
-# """
-# INSERT INTO visits (participant_id, date, next_procedure) VALUES (?, ?, ?);
-# """, (1, '2023-09-27', 'nipple reconstruction')
-# )
+cursor.execute(
+"""
+INSERT INTO visits (participant_id, date, next_procedure) VALUES (?, ?, ?);
+""", (1, '2023-09-27', 'nipple reconstruction')
+)
 
 # experiments
 cursor.execute(
@@ -122,43 +122,16 @@ CREATE TABLE IF NOT EXISTS experiments (
 id INTEGER PRIMARY KEY,
 visit_id INTEGER NOT NULL,
 parameter_id INTEGER NOT NULL,
-round_count INTEGER NOT NULL,
 FOREIGN KEY(visit_id) REFERENCES visits(id)
 );
 """
 )
 
-# cursor.execute(
-# """
-# INSERT INTO experiments (visit_id, parameter_id, round_count) VALUES (?, ?, ?);
-# """, (1, 1, 0)
-# )
-
-# trials
 cursor.execute(
 """
-CREATE TABLE IF NOT EXISTS trials (
-id INTEGER PRIMARY KEY,
-experiment_id INTEGER NOT NULL,
-round INTEGER NOT NULL,
-img1_id INTEGER NOT NULL,
-img2_id INTEGER NOT NULL,
-select_id INTEGER NOT NULL,
-timepoint TIMESTAMP NOT NULL,
-meanx FLOAT NOT NULL,
-meany FLOAT NOT NULL,
-stdx FLOAT NOT NULL,
-stdy FLOAT NOT NULL,
-FOREIGN KEY(experiment_id) REFERENCES experiments(id)
-);
-"""
+INSERT INTO experiments (visit_id, parameter_id) VALUES (?, ?);
+""", (1, 1)
 )
-
-# cursor.execute(
-# """
-# INSERT INTO trials (experiment_id, round, img1_id, img2_id, select_id, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-# """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', 0.20, -0.23, 0.19, 0.21)
-# )
 
 # perceptual_map
 cursor.execute(
@@ -249,16 +222,83 @@ probability_model TEXT NOT NULL
 """
 )
 
+cursor.execute(
+"""
+INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
+""", ("random pair selection", -1, "na", "na")
+)
+
+cursor.execute(
+"""
+INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
+""", ("active pair selection", 1.204, "CONSTANT", "BT")
+)
+
+cursor.execute(
+"""
+INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
+""", ("active pair selection", 5.329, "DECAYING", "BT")
+)
+
+############################################
+# trials
 # cursor.execute(
 # """
-# INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
-# """, ("random pair selection", -1, "na", "na")
+# CREATE TABLE IF NOT EXISTS trials (
+# id INTEGER PRIMARY KEY,
+# experiment_id INTEGER NOT NULL,
+# round INTEGER NOT NULL,
+# img1_id INTEGER NOT NULL,
+# img2_id INTEGER NOT NULL,
+# select_id INTEGER NOT NULL,
+# timepoint TIMESTAMP NOT NULL,
+# meanx FLOAT NOT NULL,
+# meany FLOAT NOT NULL,
+# stdx FLOAT NOT NULL,
+# stdy FLOAT NOT NULL,
+# FOREIGN KEY(experiment_id) REFERENCES experiments(id)
+# );
+# """
 # )
 
 # cursor.execute(
 # """
-# INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
-# """, ("active pair selection", 1.204, "CONSTANT", "logit")
+# INSERT INTO trials (experiment_id, round, img1_id, img2_id, select_id, timepoint, meanx, meany, stdx, stdy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+# """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', 0.20, -0.23, 0.19, 0.21)
+# )
+
+# trials
+cursor.execute(
+"""
+CREATE TABLE IF NOT EXISTS trials (
+id INTEGER PRIMARY KEY,
+experiment_id INTEGER NOT NULL,
+round INTEGER NOT NULL,
+img1_id INTEGER NOT NULL,
+img2_id INTEGER NOT NULL,
+select_id INTEGER NOT NULL,
+timepoint TIMESTAMP NOT NULL,
+mean TEXT,
+cov TEXT,
+a TEXT,
+tau FLOAT,
+FOREIGN KEY(experiment_id) REFERENCES experiments(id)
+);
+"""
+)
+
+# import numpy as np
+# import json
+
+# mean = np.array([0.08756645, 0.00019115])
+# cov = np.array([[0.08257532, -0.00073675], [-0.00073675, 0.08365184]])
+# a = np.array([-0.3654387, 0.01344264])
+# tau = 0.002649889696594203
+
+# cursor.execute(
+# """
+# INSERT INTO trials (experiment_id, round, img1_id, img2_id, select_id, timepoint, mean, cov, a, tau) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+# """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', json.dumps(mean.tolist()), json.dumps(cov.tolist()), json.dumps(a.tolist()), tau)
 # )
 
 connection.commit()
