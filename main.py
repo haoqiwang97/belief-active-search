@@ -269,7 +269,7 @@ class Database():
 
     def _continue(self):
         # if continue, read database
-        trials = read_pd('newtrials').query('experiment_id == @self.experiment_id') # todo: change to trials
+        trials = read_pd('trials').query('experiment_id == @self.experiment_id') # todo: change to trials
         
         self.A = [np.array(ast.literal_eval(s)) for s in trials['a'].tolist()]  # list
         self.tau = [np.float64(s) for s in trials['tau'].tolist()]  # numpy list
@@ -430,17 +430,16 @@ class BayesEstimate():
     }
     """
 
-    def __init__(self, db: Database):
-        # load Stan model
-        self.sm = pickle.load(open('model.pkl', 'rb'))
-        print("Loaded saved model")
-
-        """
-        # to make model
-        self.sm = pystan.StanModel(model_code=self.my_model)
-        with open('model.pkl', 'wb') as f:
-            pickle.dump(self.sm, f)
-        """
+    def __init__(self, db: Database):   
+        # make model
+        try:
+            # load Stan model
+            self.sm = pickle.load(open('model.pkl', 'rb'))
+            print("Loaded saved model")
+        except:
+            self.sm = pystan.StanModel(model_code=self.stan_model)
+            with open('model.pkl', 'wb') as f:
+                pickle.dump(self.sm, f)
 
         self.db = db  # input, read from database, A, tau, y_vec
 
@@ -575,16 +574,11 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     img2 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[1]')['img_name'].item()  # todo: item
 
     # get coordinate
-    trials_df = read_pd('trials')
-    coordinates = trials_df.query('experiment_id == @selected_experiment').iloc[-1]
-    # print(coordinates)
-    # print(np.around(np.array(ast.literal_eval(coordinates['mean'])), decimals=3))
-
     # app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
     pred = "/temporary/search.png"
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred, 
-                                                     "mean": np.around(np.array(ast.literal_eval(coordinates['mean'])), decimals=3), 
-                                                     "cov": np.around(np.array(ast.literal_eval(coordinates['cov'])), decimals=3)})
+                                                     "mean": np.around(db.mu_W, decimals=3), 
+                                                     "cov": np.around(db.Wcov, decimals=3)})
 
 def get_number_rounds(experiment_id: int):
     connection = sqlite3.connect(config.DB_FILE)
