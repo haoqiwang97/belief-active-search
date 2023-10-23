@@ -22,7 +22,9 @@
 ## Commands
 Local test
 ```zsh
-uvicorn main:app --reload  
+pip list --format=freeze > requirements_pip.txt  
+
+uvicorn main:app --reload
 
 docker build -t belief .
 docker run -dp 80:80 belief
