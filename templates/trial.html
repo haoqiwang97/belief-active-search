@@ -30,7 +30,6 @@
         <div class="row">
             <div class="column">
                 <form action="/submit-trial" method="post">
-                    <!-- Add a hidden input field for selected_experiment -->
                     <input type="hidden" name="selected_experiment" value="{{ request.query_params.selected_experiment }}">
                     <div class="ui three column grid">
                         <div class="column">
@@ -38,9 +37,6 @@
                             <button class="fluid ui button" type="submit" name="selected_image" value="img1left">
                                 <img class="ui fluid image" src={{img1}} alt="img1left">
                             </button>
-                            <!-- <a class="fluid ui button" tabindex="0" id="button1">
-                                <img class="ui fluid image" src={{img1}} alt="img1left" id="img1">
-                            </a> -->
                         </div>
                         <div class="column">
                             <input type="hidden" name="img2" value="{{img2}}">
@@ -51,9 +47,9 @@
                         <div class="column">
                             <img class="ui fluid image" src={{pred}} alt="prediction">
                             <div class="sentences">
-                                <p>Estimation (x, y)</p>
-                                <p>Coordinate: (0.20, -0.23)</p>
-                                <p>Variation: (0.19, 0.21)</p>
+                                <!-- <p>Estimation (x, y)</p> -->
+                                <p>Mean: {{mean}}</p>
+                                <p>Variation: {{cov}}</p>
                             </div>
                         </div>
                     </div>
