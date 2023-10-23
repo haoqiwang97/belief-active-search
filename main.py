@@ -201,8 +201,8 @@ async def submit_experiment(selected_visit: int = Form(...), selected_parameter:
 
     cursor.execute(
     """
-    INSERT INTO experiments (visit_id, parameter_id, round_count) VALUES (?, ?, ?);
-    """, (selected_visit, selected_parameter, 0)
+    INSERT INTO experiments (visit_id, parameter_id) VALUES (?, ?);
+    """, (selected_visit, selected_parameter)
     )
 
     connection.commit()
@@ -432,14 +432,14 @@ class BayesEstimate():
 
     def __init__(self, db: Database):   
         # make model
-        try:
-            # load Stan model
-            self.sm = pickle.load(open('model.pkl', 'rb'))
-            print("Loaded saved model")
-        except:
-            self.sm = pystan.StanModel(model_code=self.stan_model)
-            with open('model.pkl', 'wb') as f:
-                pickle.dump(self.sm, f)
+        # try:
+        # load Stan model
+        self.sm = pickle.load(open('model.pkl', 'rb'))
+        print("Loaded saved model")
+        # except:
+        #     self.sm = pystan.StanModel(model_code=self.stan_model)
+        #     with open('model.pkl', 'wb') as f:
+        #         pickle.dump(self.sm, f)
 
         self.db = db  # input, read from database, A, tau, y_vec
 
@@ -544,6 +544,12 @@ class BayesEstimate():
         # plt.pause(self.plot_pause)  # for observation
         # plt.pause(0.5)  # for observation
 
+import time
+# Function to generate a timestamp
+# To dynamically update the image path in your HTML template when a new image is generated or updated, you should include a version or timestamp in the image URL. 
+# This way, when a new image is created or updated, the URL changes, forcing the browser to request the updated image from the server.
+def get_timestamp():
+    return int(time.time())
 
 @app.get('/trial')
 # http://127.0.0.1:8000/trial?selected_experiment=1&round_count=3
@@ -575,7 +581,9 @@ def trial(request: Request, selected_experiment: int = Query(...)):
 
     # get coordinate
     # app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
-    pred = "/temporary/search.png"
+    # pred = "/temporary/search.png"
+    timestamp = get_timestamp()
+    pred = f"/temporary/search.png?timestamp={timestamp}"
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred, 
                                                      "mean": np.around(db.mu_W, decimals=3), 
                                                      "cov": np.around(db.Wcov, decimals=3)})
