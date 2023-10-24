@@ -23,14 +23,17 @@
     <div class="ui grid container">
         <div class="row">
             <div class="column">
-                <h1 class="ui header">Which photograph is more similar to what you expect to look like after the next surgery or procedure?</h1>
+                <h1 class="ui header">Which photograph is more similar to what you expect to look like after the next
+                    surgery or procedure? <span style="color: gray;">(Number of rounds done: {{ number_rounds }}, max 300)</span>
+                </h1>
             </div>
         </div>
 
         <div class="row">
             <div class="column">
                 <form action="/submit-trial" method="post">
-                    <input type="hidden" name="selected_experiment" value="{{ request.query_params.selected_experiment }}">
+                    <input type="hidden" name="selected_experiment"
+                        value="{{ request.query_params.selected_experiment }}">
                     <div class="ui three column grid">
                         <div class="column">
                             <input type="hidden" name="img1" value="{{img1}}">
@@ -47,9 +50,15 @@
                         <div class="column">
                             <img class="ui fluid image" src={{pred}} alt="prediction">
                             <div class="sentences">
-                                <!-- <p>Estimation (x, y)</p> -->
                                 <p>Mean: {{mean}}</p>
                                 <p>Variation: {{cov}}</p>
+                                <p></p>
+                            </div>
+                            <div style="text-align: center;">
+                                <img class="ui fluid image" src="{{closest_neighbor_img}}" alt="closest" style="width: 50%; display: block; margin: 0 auto;">
+                            </div>                            
+                            <div class="sentences">
+                                <p>Approximated expectation</p>
                             </div>
                         </div>
                     </div>
