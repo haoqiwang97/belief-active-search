@@ -1,4 +1,3 @@
-# uvicorn main:app --reload 
 import uvicorn
 
 import sqlite3, config
@@ -128,7 +127,6 @@ async def submit_provider(number: int = Form(...), name: str = Form(...)):
     connection.commit()
 
     logging.info(f"Insert number={number}, name={name}")
-    # print(number, race, ethnicity, age)
 
     return RedirectResponse(url="/providerslist", status_code=303)
 
@@ -189,7 +187,7 @@ def experiemnts(request: Request):
     for experiment_id in experiment_ids:
         number_rounds_list.append(get_number_rounds(experiment_id))
 
-    parameters = read_db('parameters') # todo: use this function instead of defining repeats
+    parameters = read_db('parameters')
     return templates.TemplateResponse("experimentslist.html", {"request": request, "visits": visits, "experiments": experiments, "parameters": parameters, "number_rounds_list": number_rounds_list})
 
 @app.post("/submit-experiment")
@@ -214,32 +212,28 @@ import numpy as np
 import ast
 import json
 
+
 class Database():
     def __init__(self, experiment_id: int = None):
         self.experiment_id = experiment_id
 
         # perceptual map related parameters
-        self.embedding = read_pd('perceptual_map')[['x', 'y']].to_numpy()  # select x, y columns
-        # self.embedding = np.genfromtxt('best_embedding_2023-08-31.csv', delimiter=',')
+        self.embedding = read_pd('perceptual_map')[['x', 'y']].to_numpy()  # select x, y columns, # self.embedding = np.genfromtxt('best_embedding_2023-08-31.csv', delimiter=',')
 
         self.N = self.embedding.shape[0]  # # N, number of items, used by ActiveQuery
         self.D = self.embedding.shape[1]  # number of dimensions of perceptual map
         self.bounds = [-0.5, 0.5]  # todo: get this according to perceptual map? may need to update stan model
 
         # bayes model related parameters, read from database, shared by all
-        # self.k = 5.329
-        # self.k_normalization = 'DECAYING'
-        # self.noise_model = 'BT'
         experiments_df = read_pd('experiments')
         parameter_id = experiments_df.query('id == @experiment_id')['parameter_id'].item()
         
         parameters_df = read_pd('parameters')
         parameters = parameters_df.query('id == @parameter_id')
-        self.k = parameters['k'].item()
-        self.k_normalization = parameters['response_model'].item()
-        self.noise_model = parameters['probability_model'].item()
+        self.k = parameters['k'].item()  # self.k = 5.329
+        self.k_normalization = parameters['response_model'].item()  # self.k_normalization = 'DECAYING'
+        self.noise_model = parameters['probability_model'].item()  # self.noise_model = 'BT'
             
-        # self.k = 5.329
         self.Nsamples = 4000  # number of samples
 
         # active query related parameters
@@ -263,13 +257,13 @@ class Database():
         self.W_samples = np.random.uniform(self.bounds[0], self.bounds[1], (self.Nsamples, self.D))
         
         self.mu_W = np.mean(self.W_samples, 0)
-        self.Wcov = np.cov(self.W_samples, rowvar=False)  # todo: just give a number?
+        self.Wcov = np.cov(self.W_samples, rowvar=False)
         self.A_sel = 0  # self.A[-1]
         self.tau_sel = 0  # self.tau[-1]
 
     def _continue(self):
         # if continue, read database
-        trials = read_pd('trials').query('experiment_id == @self.experiment_id') # todo: change to trials
+        trials = read_pd('trials').query('experiment_id == @self.experiment_id')
         
         self.A = [np.array(ast.literal_eval(s)) for s in trials['a'].tolist()]  # list
         self.tau = [np.float64(s) for s in trials['tau'].tolist()]  # numpy list
@@ -285,31 +279,6 @@ class Database():
         estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
         return estimation
     
-    def update(self, estimation: dict, query: Tuple[int, int], response: int):
-        self.mu_W = estimation['mean']
-        self.Wcov = estimation['cov']
-
-        self.A_sel = estimation['a']
-        self.tau_sel = estimation['tau']
-        self.A.append(self.A_sel)
-        self.tau.append(self.tau_sel)
-
-        self.query = query # todo:
-        self.response.append(response)
-        response_binary = 1 if response == query[0] else 0
-        self.y_vec.append(response_binary)
-
-        # write to database
-        # query, response
-        # 'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov
-
-        # connection = sqlite3.connect(config.DB_FILE)
-        # cursor = connection.cursor()
-        # cursor.execute(
-        # """
-        # INSERT INTO newtrials (experiment_id, round, img1_id, img2_id, select_id, timepoint, mean, cov, a, tau) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-        # """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', json.dumps(mean.tolist()), json.dumps(cov.tolist()), json.dumps(a.tolist()), tau)
-        # )
 
 def pair2hyperplane(p, embedding: np.ndarray, normalization: str, slice_point=None):
     # converts pair to hyperplane weights and bias
@@ -528,7 +497,7 @@ class BayesEstimate():
         # plot response
         # plt.scatter(embedding[response, 0], embedding[response, 1], s=80, facecolors='none', edgecolors='r', zorder=2)
 
-        # print(f"Current estimate: {estimate_point}")
+        print(f"Current estimate: {estimate_point}")
 
         plt.ion()
 
@@ -537,9 +506,6 @@ class BayesEstimate():
         folder_name = "temporary"
         plot_name = f"{folder_name}/search.png"
         plt.savefig(plot_name, dpi=300)
-
-        app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
-
 
         # plt.pause(self.plot_pause)  # for observation
         # plt.pause(0.5)  # for observation
@@ -555,7 +521,6 @@ def get_timestamp():
 # http://127.0.0.1:8000/trial?selected_experiment=1&round_count=3
 def trial(request: Request, selected_experiment: int = Query(...)):
     # read image to memory
-    # todo: can do it without mount?
     # select 2 images
     # manually select
     img1 = "/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png" # "https://www.w3schools.com/images/picture.jpg" #
@@ -576,14 +541,13 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     estimation = db.initial_estimate()  # maybe no need to do this? no, initialization still need?
     query = aq.get_next_round(estimation['cov'])
     imgdb_pd = read_pd('imgdb')
-    img1 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[0]')['img_name'].item()  # todo: item
-    img2 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[1]')['img_name'].item()  # todo: item
+    img1 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[0]')['img_name'].item()
+    img2 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[1]')['img_name'].item()
 
-    # get coordinate
-    # app.mount("/temporary", StaticFiles(directory="./temporary"), name="temporary")
-    # pred = "/temporary/search.png"
+    # get prediction
     timestamp = get_timestamp()
     pred = f"/temporary/search.png?timestamp={timestamp}"
+    # get coordinate
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred, 
                                                      "mean": np.around(db.mu_W, decimals=3), 
                                                      "cov": np.around(db.Wcov, decimals=3)})
@@ -624,7 +588,7 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
     be = BayesEstimate(db)
     # input: previous selections
     # output: figure, mean, std
-    # do not show the same pair appeared before
+    # todo: do not show the same pair appeared before
     # write to database
     query = (img1_id, img2_id)
     response = selected_image
@@ -644,7 +608,6 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
     connection.commit()
 
     return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
-# todo: submit trial goes to http://127.0.0.1:8000/trial, but should go to http://127.0.0.1:8000/trial?selected_experiment=1, submit_trial needs to know selected_experiment
 
 @app.get("/", response_class=HTMLResponse)
 def write_home(request: Request):
@@ -668,7 +631,6 @@ def patients(request: Request):
 
 @app.post("/submitform")
 async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity: str = Form(...), age: int = Form(...)):
-    #TODO: write to database, use logging
     connection = sqlite3.connect(config.DB_FILE)
     cursor = connection.cursor()
 
@@ -681,7 +643,6 @@ async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity:
     connection.commit()
 
     logging.info(f"Insert number={number}, race={race}, ethnicity={ethnicity}, age={age}")
-    # print(number, race, ethnicity, age)
 
     return RedirectResponse(url="/patients", status_code=303)
 
