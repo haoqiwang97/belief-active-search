@@ -57,9 +57,6 @@ def random_select() -> Tuple[str, str]:
     return img1, img2
 
 
-def active_select():
-    pass
-
 @app.get("/home", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
@@ -81,14 +78,14 @@ def patients(request: Request):
     return templates.TemplateResponse("patientslist.html", {"request": request, "patients": patients})
 
 @app.post("/submit-patient")
-async def submit_patient(number: int = Form(...), language: str = Form(...)):
+async def submit_patient(number: int = Form(...), language: str = Form(...), ethnicity: str = Form(...), race: str = Form(...), gender: str = Form(...), sex: str = Form(...), age: str = Form(...)):
     connection = sqlite3.connect(config.DB_FILE)
     cursor = connection.cursor()
 
     cursor.execute(
       """
-      INSERT INTO patients (number, language) VALUES (?, ?);
-      """, (number, language)
+      INSERT INTO patients (number, language, ethnicity, race, gender, sex, age) VALUES (?, ?, ?, ?, ?, ?, ?);
+      """, (number, language, ethnicity, race, gender, sex, age)
       )
     
     connection.commit()
@@ -171,7 +168,6 @@ async def submit_visit(selected_participant: int = Form(...), visit_date: date =
     )
 
     connection.commit()
-
     return RedirectResponse(url="/visitslist", status_code=303)
 
 @app.get("/experimentslist")
@@ -204,7 +200,6 @@ async def submit_experiment(selected_visit: int = Form(...), selected_parameter:
     )
 
     connection.commit()
-
     return RedirectResponse(url="/experimentslist", status_code=303)
 
 
@@ -241,6 +236,7 @@ class Database():
 
         # number of rounds done
         number_rounds = get_number_rounds(experiment_id)
+        self.number_rounds = number_rounds
         if number_rounds == 0:
             self._start()  # activequery
         else:
@@ -517,6 +513,8 @@ import time
 def get_timestamp():
     return int(time.time())
 
+from scipy.spatial.distance import cdist
+
 @app.get('/trial')
 # http://127.0.0.1:8000/trial?selected_experiment=1&round_count=3
 def trial(request: Request, selected_experiment: int = Query(...)):
@@ -544,11 +542,21 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     img1 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[0]')['img_name'].item()
     img2 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[1]')['img_name'].item()
 
-    # get prediction
+    # get prediction, i.e. posterior distribution plot
     timestamp = get_timestamp()
     pred = f"/temporary/search.png?timestamp={timestamp}"
+
     # get coordinate
+    # find point that is closest to the estimation['mean']
+    distances = cdist([estimation['mean']], db.embedding)  # make 2d array
+    # read perceptual map, find image id
+    closest_neighbor_img_id = np.argmin(distances)
+    # find path of image id
+    closest_neighbor_img = "/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item()
+
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred, 
+                                                     "closest_neighbor_img": closest_neighbor_img,
+                                                     "number_rounds": db.number_rounds,
                                                      "mean": np.around(db.mu_W, decimals=3), 
                                                      "cov": np.around(db.Wcov, decimals=3)})
 
@@ -610,41 +618,42 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
     return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
 
 @app.get("/", response_class=HTMLResponse)
-def write_home(request: Request):
-    return templates.TemplateResponse("add_patient.html", {"request": request})
+async def write_home(request: Request):
+    # return templates.TemplateResponse("add_patient.html", {"request": request})
+    return RedirectResponse(url="/home")
 
-@app.get("/patients")
-def patients(request: Request):
-    connection = sqlite3.connect(config.DB_FILE)
-    connection.row_factory = sqlite3.Row
+# @app.get("/patients")
+# def patients(request: Request):
+#     connection = sqlite3.connect(config.DB_FILE)
+#     connection.row_factory = sqlite3.Row
 
-    cursor = connection.cursor()
+#     cursor = connection.cursor()
 
-    cursor.execute("""
-                   SELECT *
-                   FROM patient
-                   """)
+#     cursor.execute("""
+#                    SELECT *
+#                    FROM patient
+#                    """)
     
-    patients = cursor.fetchall()
+#     patients = cursor.fetchall()
 
-    return templates.TemplateResponse("patients.html", {"request": request, "patients": patients})
+#     return templates.TemplateResponse("patients.html", {"request": request, "patients": patients})
 
-@app.post("/submitform")
-async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity: str = Form(...), age: int = Form(...)):
-    connection = sqlite3.connect(config.DB_FILE)
-    cursor = connection.cursor()
+# @app.post("/submitform")
+# async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity: str = Form(...), age: int = Form(...)):
+#     connection = sqlite3.connect(config.DB_FILE)
+#     cursor = connection.cursor()
 
-    cursor.execute(
-      """
-      INSERT INTO patient (number, age, race, ethnicity) VALUES (?, ?, ?, ?);
-      """, (number, age, race, ethnicity)
-      )
+#     cursor.execute(
+#       """
+#       INSERT INTO patient (number, age, race, ethnicity) VALUES (?, ?, ?, ?);
+#       """, (number, age, race, ethnicity)
+#       )
     
-    connection.commit()
+#     connection.commit()
 
-    logging.info(f"Insert number={number}, race={race}, ethnicity={ethnicity}, age={age}")
+#     logging.info(f"Insert number={number}, race={race}, ethnicity={ethnicity}, age={age}")
 
-    return RedirectResponse(url="/patients", status_code=303)
+#     return RedirectResponse(url="/patients", status_code=303)
 
 
 if __name__ == "__main__":
