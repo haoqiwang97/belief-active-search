@@ -41,15 +41,20 @@ cursor.execute(
 CREATE TABLE IF NOT EXISTS patients (
 id INTEGER PRIMARY KEY,
 number INTEGER NOT NULL UNIQUE,
-language TEXT NOT NULL
+language TEXT NOT NULL,
+ethnicity TEXT NOT NULL,
+race TEXT NOT NULL,
+gender TEXT NOT NULL,
+sex TEXT NOT NULL,
+age INTEGER NOT NULL
 );
 """
 )
 
 cursor.execute(
 """
-INSERT INTO patients (number, language) VALUES (?, ?);
-""", (1, 'English')
+INSERT INTO patients (number, language, ethnicity, race, gender, sex, age) VALUES (?, ?, ?, ?, ?, ?, ?);
+""", (1, 'English', 'Non-Hispanic', 'Asian', 'Female', 'Female', 50)
 )
 
 # providers
