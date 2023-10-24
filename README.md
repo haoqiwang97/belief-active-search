@@ -42,12 +42,12 @@ Azure, deploy container and mount volume, first manually upload database file (c
 az login # interactive login
 
 ACI_PERS_RESOURCE_GROUP=beliefResourceGroup
-ACI_PERS_STORAGE_ACCOUNT_NAME=beliefstorageaccount
+ACI_PERS_STORAGE_ACCOUNT_NAME=utbeliefstorageaccount
 ACI_PERS_LOCATION=eastus
 ACI_PERS_SHARE_NAME=beliefshare
 
 # Create resource group
-az group create --name $ACI_PERS_RESOURCE_GROUP --location eastus
+az group create --name $ACI_PERS_RESOURCE_GROUP --location $ACI_PERS_LOCATION
 
 # Create an Azure container registry
 # previously I used ACR_NAME=bmilbelief, so bmilbelief.azurecr.io is already in use
@@ -98,7 +98,7 @@ CONTAINER_NAME=bmil-belief-app
 # path, beliefResourceGroup>utbmilbelief
 # get password, #utbmilbelief 
 az acr credential show --name $ACR_NAME 
-REGISTRY_PASSWORD=7swO/psfuRmK/fBocfmmTJ3DJp7cl4XEJ6B1ZWD2ZK+ACRB5Jqts
+REGISTRY_PASSWORD=IlsbNa0DW8+XOGSwYZub9ETUjPOXKY7Asg3caYLw7D+ACRBj+a3B
 
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
@@ -112,8 +112,26 @@ az container create \
     --azure-file-volume-mount-path /app/database/ \
     --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
 
+# update container, note v1 -> v2
+az container create \
+    --resource-group $ACI_PERS_RESOURCE_GROUP \
+    --name $CONTAINER_NAME \
+    --image utbmilbelief.azurecr.io/belief:v2 \
+    --dns-name-label utbmilbelief \
+    --ports 80 \
+    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
+    --azure-file-volume-account-key $STORAGE_KEY \
+    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
+    --azure-file-volume-mount-path /app/database/ \
+    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD \
+    --cpu 2 --memory 3.5
+
 # View the application and container logs
 az container show --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --query ipAddress.fqdn
+az container logs --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME
+
+# run command in container instance
+az container exec --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --exec-command "gcc --version"
 
 # download database
 DEST="/Users/haoqiwang/Downloads/belief.db"
