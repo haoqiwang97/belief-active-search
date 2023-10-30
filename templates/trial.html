@@ -16,6 +16,17 @@
             text-align: center;
             /* Align the sentences to the center */
         }
+
+        .buttons-outside-container {
+            position: fixed;
+            top: 1%;
+            right: 1%;
+        }
+
+        .buttons-outside-container .ui.button {
+            margin-bottom: 5px;
+            display: block;
+        }
     </style>
 </head>
 
@@ -65,7 +76,20 @@
                 </form>
             </div>
         </div>
-    </div>
-</body>
 
+        <div class="row">
+            <div class="ui buttons">
+                <a href="/experimentslist" class="ui button">Back</a>
+            </div>
+        </div>        
+    </div>
+
+
+    <div class="buttons-outside-container">
+        <a href="/experimentslist" class="circular ui icon button">
+            <i class="icon settings"></i>
+        </a>
+    </div>
+    
+</body>
 </html>
