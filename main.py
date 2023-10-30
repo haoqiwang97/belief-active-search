@@ -56,7 +56,6 @@ def random_select() -> Tuple[str, str]:
     # also write to trials table?
     return img1, img2
 
-
 @app.get("/home", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
@@ -228,7 +227,8 @@ class Database():
         self.k = parameters['k'].item()  # self.k = 5.329
         self.k_normalization = parameters['response_model'].item()  # self.k_normalization = 'DECAYING'
         self.noise_model = parameters['probability_model'].item()  # self.noise_model = 'BT'
-            
+        
+        # todo: method, random/mcmv
         self.Nsamples = 4000  # number of samples
 
         # active query related parameters
@@ -534,7 +534,7 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     # get parameter by selected_experiment
     db = Database(experiment_id=selected_experiment)
     # initialize ActiveQuery based on given parameters
-    aq = ActiveQuery(db, 'MCMV')
+    aq = ActiveQuery(db, 'MCMV')  # todo: method, random/mcmv
     # get next round
     estimation = db.initial_estimate()  # maybe no need to do this? no, initialization still need?
     query = aq.get_next_round(estimation['cov'])
@@ -543,9 +543,10 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     img2 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[1]')['img_name'].item()
 
     # get prediction, i.e. posterior distribution plot
+    # todo: spanish version not ready yet
     timestamp = get_timestamp()
     pred = f"/temporary/search.png?timestamp={timestamp}"
-
+    # todo: print current coordinate twice
     # get coordinate
     # find point that is closest to the estimation['mean']
     distances = cdist([estimation['mean']], db.embedding)  # make 2d array
@@ -622,6 +623,15 @@ async def write_home(request: Request):
     # return templates.TemplateResponse("add_patient.html", {"request": request})
     return RedirectResponse(url="/home")
 
+@app.get("/validity")
+def validity(request: Request):    
+    return templates.TemplateResponse("validity.html", {"request": request})
+
+@app.post("/submit-validity")
+async def submit_validity(q1: str = Form(...), q2: str = Form(...), q3: str = Form(...)):
+    print(q1, q2, q3)
+    # todo: need experiment_id, round
+    return RedirectResponse(url="/home", status_code=303)
 # @app.get("/patients")
 # def patients(request: Request):
 #     connection = sqlite3.connect(config.DB_FILE)

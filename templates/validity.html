@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .left-half {
+        width: 50%;
+        float: left;
+        padding: 10px;
+    }
+
+    .right-half {
+        width: 50%;
+        float: left;
+        padding: 10px;
+    }
+
+    .centered-button {
+        text-align: center;
+        margin-top: 20px; /* Adjust margin as needed */
+    }
+</style>
+
+<h1>Validity form</h1>
+<div class="ui grid container">
+    <form action="/submit-validity" method="post" class="ui form">
+        <div class="fields">
+            <div class="left-half">
+                <img class="ui fluid image"
+                    src="/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png"
+                    style="width: 40%; display: block; margin: 0 auto;">
+            </div>
+            <div class="right-half">
+                <div class="field">
+                    <h3>1. Is this photograph similar to your expectation of reconstruction outcome? (Rate from 1 to 5,
+                        1: very unsimilar, 5: very similar)</h3>
+                </div>
+                <div class="inline fields">
+                    <div class="inline fields">
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="1">
+                                <label>1</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="2">
+                                <label>2</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="3">
+                                <label>3</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="4">
+                                <label>4</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="5">
+                                <label>5</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <h3>2. If we show this photograph to your doctor, do you think your doctor will have a better
+                        understanding of your thought?</h3>
+                </div>
+                <div class="inline fields">
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="q2" value="Yes">
+                            <label>Yes</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="q2" value="No">
+                            <label>No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui container">
+            <div class="fields">
+                <div class="left-half">
+                    <div class="ui small images">
+                        <img src="/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png"
+                            style="width: 30%; display: inline-block; margin: 0 1%;" class="ui image">
+                        <img src="/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png"
+                            style="width: 30%; display: inline-block; margin: 0 1%;" class="ui image">
+                    </div>
+                </div>
+                <div class="right-half">
+                    <div class="field">
+                        <h3>3. For the 2 images shown one the left, which better describe your expectation?</h3>
+                    </div>
+                    <div class="inline fields">
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q3" value="left">
+                                <label>Left</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q3" value="right">
+                                <label>Right</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="centered-button">
+            <!-- <button class="ui button" type="submit">Submit</button> -->
+            <input type="submit">
+        </div>
+    </form>
+</div>
+{% endblock %}
