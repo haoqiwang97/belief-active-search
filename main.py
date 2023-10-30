@@ -271,9 +271,13 @@ class Database():
         self.A_sel = self.A[-1]
         self.tau_sel = self.tau[-1]
     
-    def initial_estimate(self) -> dict:
+    def latest_estimate(self) -> dict:
         estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
         return estimation
+    
+    def previous_mean(self, number_rounds_previous: int = 10):
+        trials = read_pd('trials').query('experiment_id == @self.experiment_id')
+        return [np.array(ast.literal_eval(s)) for s in trials['mean'].tolist()][int(-1 * number_rounds_previous)]
     
 
 def pair2hyperplane(p, embedding: np.ndarray, normalization: str, slice_point=None):
@@ -493,7 +497,7 @@ class BayesEstimate():
         # plot response
         # plt.scatter(embedding[response, 0], embedding[response, 1], s=80, facecolors='none', edgecolors='r', zorder=2)
 
-        print(f"Current estimate: {estimate_point}")
+        # print(f"Current estimate: {estimate_point}")
 
         plt.ion()
 
@@ -516,7 +520,7 @@ def get_timestamp():
 from scipy.spatial.distance import cdist
 
 @app.get('/trial')
-# http://127.0.0.1:8000/trial?selected_experiment=1&round_count=3
+# http://127.0.0.1:8000/trial?selected_experiment=1
 def trial(request: Request, selected_experiment: int = Query(...)):
     # read image to memory
     # select 2 images
@@ -533,10 +537,13 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     # output: path to 2 images, plot
     # get parameter by selected_experiment
     db = Database(experiment_id=selected_experiment)
+    # if db.number_rounds > 10 and db.number_rounds % 10 == 0: # todo: if not done this
+    #     return templates.TemplateResponse("validity.html", {"request": request})
+    
     # initialize ActiveQuery based on given parameters
     aq = ActiveQuery(db, 'MCMV')  # todo: method, random/mcmv
     # get next round
-    estimation = db.initial_estimate()  # maybe no need to do this? no, initialization still need?
+    estimation = db.latest_estimate()  # maybe no need to do this? no, initialization still need?
     query = aq.get_next_round(estimation['cov'])
     imgdb_pd = read_pd('imgdb')
     img1 = "/img_database_2d/" + imgdb_pd.query('img_id == @query[0]')['img_name'].item()
@@ -554,6 +561,7 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     closest_neighbor_img_id = np.argmin(distances)
     # find path of image id
     closest_neighbor_img = "/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item()
+
 
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred, 
                                                      "closest_neighbor_img": closest_neighbor_img,
@@ -577,13 +585,13 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
     # get round_count by experiment_id
     round = get_number_rounds(experiment_id)
 
-    img1 = img1[len(img_mount_path)+1: ]
-    img2 = img2[len(img_mount_path)+1: ]
+    img1_short = img1[len(img_mount_path)+1: ]
+    img2_short = img2[len(img_mount_path)+1: ]
 
     # name to img_id
     df = read_pd('imgdb')
-    img1_id = df.loc[df['img_name'] == img1, 'img_id'].item()
-    img2_id = df.loc[df['img_name'] == img2, 'img_id'].item()
+    img1_id = df.loc[df['img_name'] == img1_short, 'img_id'].item()
+    img2_id = df.loc[df['img_name'] == img2_short, 'img_id'].item()
  
     if selected_image == "img1left":
         print("Button clicked: img1left")
@@ -616,6 +624,11 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
 
     connection.commit()
 
+    if round > 10 and round % 3 == 0: # todo: if not done this, go to validity form and then go to trial
+        return RedirectResponse(url=f"/validity?selected_experiment={selected_experiment}&round={round}", status_code=303) # give experiment id, round
+    # current approximation and previous approximation
+
+    # if done the above, go to next trial
     return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
 
 @app.get("/", response_class=HTMLResponse)
@@ -624,14 +637,36 @@ async def write_home(request: Request):
     return RedirectResponse(url="/home")
 
 @app.get("/validity")
-def validity(request: Request):    
-    return templates.TemplateResponse("validity.html", {"request": request})
+def validity(request: Request, selected_experiment: int, round: int):
+    db = Database(experiment_id=selected_experiment)
+    imgdb_pd = read_pd('imgdb')
+    # todo: duplicate code
+    # todo: this is current one, add previous one
+    estimation = db.latest_estimate()
+    distances = cdist([estimation['mean']], db.embedding)  # make 2d array
+    closest_neighbor_img_id = np.argmin(distances)
+    closest_neighbor_img = "/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item()
+
+    # previous one
+    distances = cdist([db.previous_mean()], db.embedding)  # make 2d array
+    closest_neighbor_img_id = np.argmin(distances)
+    closest_neighbor_img_prev = "/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item()
+    # todo: consider if I should include the 3rd question
+    return templates.TemplateResponse("validity.html", {"request": request, "closest_neighbor_img": closest_neighbor_img, "closest_neighbor_img_prev": closest_neighbor_img_prev})
 
 @app.post("/submit-validity")
-async def submit_validity(q1: str = Form(...), q2: str = Form(...), q3: str = Form(...)):
-    print(q1, q2, q3)
+async def submit_validity(q1: str = Form(...), q2: str = Form(...), selected_experiment: int = Form(...), round: int = Form(...)):
+# async def submit_validity(q1: str = Form(...), q2: str = Form(...), q3: str = Form(...), selected_experiment: int = Form(...), round: int = Form(...)):
+    # if q3 == 'left':
+    #     pick_current = True
+    # else:
+    #     pick_current = False
+    print(q1, q2, selected_experiment, round)
+    # print(q1, q2, pick_current, selected_experiment, round)
     # todo: need experiment_id, round
-    return RedirectResponse(url="/home", status_code=303)
+    # return RedirectResponse(url="/home", status_code=303)
+    return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
+
 # @app.get("/patients")
 # def patients(request: Request):
 #     connection = sqlite3.connect(config.DB_FILE)

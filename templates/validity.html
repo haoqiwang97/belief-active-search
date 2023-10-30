@@ -23,10 +23,12 @@
 <h1>Validity form</h1>
 <div class="ui grid container">
     <form action="/submit-validity" method="post" class="ui form">
+        <input type="hidden" name="selected_experiment" value="{{ request.query_params.selected_experiment }}">
+        <input type="hidden" name="round" value="{{ request.query_params.round }}">
         <div class="fields">
             <div class="left-half">
                 <img class="ui fluid image"
-                    src="/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png"
+                    src={{closest_neighbor_img}}
                     style="width: 40%; display: block; margin: 0 auto;">
             </div>
             <div class="right-half">
@@ -89,13 +91,13 @@
             </div>
         </div>
 
-        <div class="ui container">
+        <!-- <div class="ui container">
             <div class="fields">
                 <div class="left-half">
                     <div class="ui small images">
-                        <img src="/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png"
+                        <img src={{closest_neighbor_img}}
                             style="width: 30%; display: inline-block; margin: 0 1%;" class="ui image">
-                        <img src="/img_database_2d/13268_3D_165_6M_121311_UprightHH1_trim_clean_snapshot_noborder.png"
+                        <img src={{closest_neighbor_img_prev}}
                             style="width: 30%; display: inline-block; margin: 0 1%;" class="ui image">
                     </div>
                 </div>
@@ -119,7 +121,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="centered-button">
             <!-- <button class="ui button" type="submit">Submit</button> -->
             <input type="submit">
