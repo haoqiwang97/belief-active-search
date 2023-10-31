@@ -25,6 +25,7 @@
     <form action="/submit-validity" method="post" class="ui form">
         <input type="hidden" name="selected_experiment" value="{{ request.query_params.selected_experiment }}">
         <input type="hidden" name="round" value="{{ request.query_params.round }}">
+        <input type="hidden" name="closest_neighbor_img" value="{{ closest_neighbor_img }}">
         <div class="fields">
             <div class="left-half">
                 <img class="ui fluid image"

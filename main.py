@@ -655,16 +655,28 @@ def validity(request: Request, selected_experiment: int, round: int):
     return templates.TemplateResponse("validity.html", {"request": request, "closest_neighbor_img": closest_neighbor_img, "closest_neighbor_img_prev": closest_neighbor_img_prev})
 
 @app.post("/submit-validity")
-async def submit_validity(q1: str = Form(...), q2: str = Form(...), selected_experiment: int = Form(...), round: int = Form(...)):
+async def submit_validity(q1: str = Form(...), q2: str = Form(...), selected_experiment: int = Form(...), round: int = Form(...), closest_neighbor_img: str = Form(...)):
 # async def submit_validity(q1: str = Form(...), q2: str = Form(...), q3: str = Form(...), selected_experiment: int = Form(...), round: int = Form(...)):
     # if q3 == 'left':
     #     pick_current = True
     # else:
     #     pick_current = False
-    print(q1, q2, selected_experiment, round)
-    # print(q1, q2, pick_current, selected_experiment, round)
-    # todo: need experiment_id, round
-    # return RedirectResponse(url="/home", status_code=303)
+    print(selected_experiment, round, closest_neighbor_img, q1, q2) # print(q1, q2, pick_current, selected_experiment, round)
+
+    img_short = closest_neighbor_img[len(img_mount_path)+1: ]
+    df = read_pd('imgdb')
+    img_id = df.loc[df['img_name'] == img_short, 'img_id'].item()
+
+    connection = sqlite3.connect(config.DB_FILE)
+    cursor = connection.cursor()
+    cursor.execute(
+    """
+    INSERT INTO validities (experiment_id, round, top_rank_img, score, doctor_understand) VALUES (?, ?, ?, ?, ?);
+    """, (selected_experiment, round, img_id, int(q1), q2)
+    )
+
+    connection.commit()
+
     return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
 
 # @app.get("/patients")

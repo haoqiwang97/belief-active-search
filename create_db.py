@@ -306,4 +306,19 @@ FOREIGN KEY(experiment_id) REFERENCES experiments(id)
 # """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', json.dumps(mean.tolist()), json.dumps(cov.tolist()), json.dumps(a.tolist()), tau)
 # )
 
+# validities
+cursor.execute(
+"""
+CREATE TABLE IF NOT EXISTS validities (
+id INTEGER PRIMARY KEY,
+experiment_id INTEGER NOT NULL,
+round INTEGER NOT NULL,
+top_rank_img INTEGER,
+score INTEGER,
+doctor_understand TEXT,
+FOREIGN KEY(experiment_id) REFERENCES experiments(id)
+)
+"""    
+)
+
 connection.commit()
