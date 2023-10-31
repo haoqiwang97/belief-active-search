@@ -49,11 +49,12 @@ ACI_PERS_SHARE_NAME=beliefshare
 # Create resource group
 az group create --name $ACI_PERS_RESOURCE_GROUP --location $ACI_PERS_LOCATION
 
-# Create an Azure container registry
+# Create an Azure Container Registry
 # previously I used ACR_NAME=bmilbelief, so bmilbelief.azurecr.io is already in use
 ACR_NAME=utbmilbelief
 az acr create --resource-group $ACI_PERS_RESOURCE_GROUP --name $ACR_NAME --sku Basic
 
+# log in ACR
 az acr login --name $ACR_NAME
 az acr show --name $ACR_NAME --query loginServer --output table
 
@@ -97,7 +98,7 @@ CONTAINER_NAME=bmil-belief-app
 # remember to allow access key and update password
 # path, beliefResourceGroup>utbmilbelief
 # get password, #utbmilbelief 
-az acr credential show --name $ACR_NAME 
+az acr credential show --name $ACR_NAME
 REGISTRY_PASSWORD=IlsbNa0DW8+XOGSwYZub9ETUjPOXKY7Asg3caYLw7D+ACRBj+a3B
 
 az container create \
@@ -112,11 +113,12 @@ az container create \
     --azure-file-volume-mount-path /app/database/ \
     --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
 
-# update container, note v1 -> v2
+# update container, note v1 -> v4
+# need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algo that needs less cpu
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v2 \
+    --image utbmilbelief.azurecr.io/belief:v4 \
     --dns-name-label utbmilbelief \
     --ports 80 \
     --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
@@ -130,8 +132,14 @@ az container create \
 az container show --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --query ipAddress.fqdn
 az container logs --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME
 
+# website: utbmilbelief.eastus.azurecontainer.io
+
 # run command in container instance
 az container exec --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --exec-command "gcc --version"
+
+# stop container
+az container stop --name $CONTAINER_NAME \
+                  --resource-group $ACI_PERS_RESOURCE_GROUP
 
 # download database
 DEST="/Users/haoqiwang/Downloads/belief.db"
@@ -149,6 +157,11 @@ az storage file download \
 az container delete --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME
 az group delete --name $ACI_PERS_RESOURCE_GROUP
 ```
+
+Difficulties
+- Use Azure cloud, store database
+- Rewrite backend algorithms
+- Compile pystan in container
 
 # Old
 Prepare pieces
