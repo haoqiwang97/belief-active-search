@@ -12,11 +12,11 @@
                 <th>ID</th>
                 <th>Number</th>
                 <th>Language</th>
-                <th>Ethnicity</th>
+                <!-- <th>Ethnicity</th>
                 <th>Race</th>
                 <th>Gender</th>
                 <th>Sex</th>
-                <th>Age</th>
+                <th>Age</th> -->
             </tr>
         </thead>
         <tbody>
@@ -25,11 +25,11 @@
                 <td>{{ patient.id }}</td>
                 <td>{{ patient.number }}</td>
                 <td>{{ patient.language }}</td>
-                <td>{{ patient.ethnicity }}</td>
+                <!-- <td>{{ patient.ethnicity }}</td>
                 <td>{{ patient.race }}</td>
                 <td>{{ patient.gender }}</td>
                 <td>{{ patient.sex }}</td>
-                <td>{{ patient.age }}</td>
+                <td>{{ patient.age }}</td> -->
             </tr>
             {% endfor %}
         </tbody>
@@ -55,7 +55,7 @@
                 </select>
             </div>
         </div>
-        <div class="two fields">
+        <!-- <div class="two fields">
             <div class="field">
                 <label>Ethnicity</label>
                 <select class="ui fluid dropdown" name="ethnicity">
@@ -76,8 +76,8 @@
                     <option value="Two or more races">Two or more races</option>
                 </select>
             </div>
-        </div>
-        <div class="two fields">
+        </div> -->
+        <!-- <div class="two fields">
             <div class="field">
                 <label>(Gender) Do you think of yourself as: </label>
                 <select class="ui fluid dropdown" name="gender">
@@ -100,13 +100,15 @@
                     <option value="Decline to answer">Decline to answer</option>
                 </select>
             </div>
-        </div>
-        <div class="two fields">
+        </div> -->
+        <!-- <div class="two fields">
             <div class="field">
                 <label>(Age) How old are you in years?</label>
                 <input type="number" name="age" placeholder="">
             </div>
-        </div>
+        </div> -->
         <input type="submit">
     </form>
+
+    <a target="_blank" rel="noopener noreferrer" href="https://utexas.qualtrics.com/jfe/form/SV_cSWiWj6orasVSkK">Click here to complete demographic survey</a>
 {% endblock %}
