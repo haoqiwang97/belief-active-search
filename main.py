@@ -77,14 +77,14 @@ def patients(request: Request):
     return templates.TemplateResponse("patientslist.html", {"request": request, "patients": patients})
 
 @app.post("/submit-patient")
-async def submit_patient(number: int = Form(...), language: str = Form(...), ethnicity: str = Form(...), race: str = Form(...), gender: str = Form(...), sex: str = Form(...), age: str = Form(...)):
+async def submit_patient(number: int = Form(...), language: str = Form(...)):
     connection = sqlite3.connect(config.DB_FILE)
     cursor = connection.cursor()
 
     cursor.execute(
       """
-      INSERT INTO patients (number, language, ethnicity, race, gender, sex, age) VALUES (?, ?, ?, ?, ?, ?, ?);
-      """, (number, language, ethnicity, race, gender, sex, age)
+      INSERT INTO patients (number, language) VALUES (?, ?);
+      """, (number, language)
       )
     
     connection.commit()
