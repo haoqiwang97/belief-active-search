@@ -433,38 +433,8 @@ class BayesEstimate():
         k = self.db.k
         bounds = self.db.bounds
 
-        if query == None and response == None:
-            A = self.db.A
-            tau = self.db.tau
-            y_vec = self.db.y_vec
-
-            # given measurements 0..i, get posterior samples
-            data_gen = {'D': D,  # number of dimensions
-                        'k': k,  # noise constant
-                        'M': len(A),  # number of measurements so far
-                        'A': A, 
-                        'tau': tau,
-                        'y': y_vec,
-                        'bounds': bounds}
-
-            # get posterior samples
-            print('Start fitting...')
-
-            fit = self.sm.sampling(data=data_gen, iter=self.Niter, chains=self.Nchains, init=0, n_jobs=1)
-            W_samples = fit.extract()['W']
-
-            self.W_samples = W_samples
-            self.mu_W = np.mean(W_samples, 0)
-            print(f"Current estimate: {self.mu_W}")
-            self.Wcov = np.cov(self.W_samples, rowvar=False)  # get covariance
-
-            self.A_sel = self.db.A_sel
-            self.tau_sel = self.db.tau_sel
-
-            estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
-            return estimation
-        
-        else:
+        if not (query == None and response == None):
+            print("New query")
             (A_sel, tau_sel) = pair2hyperplane(query, embedding, k_normalization)
 
             A = self.db.A + [A_sel]  # self.db.A.append(A_sel)
@@ -496,6 +466,38 @@ class BayesEstimate():
 
             self.A_sel = A_sel
             self.tau_sel = tau_sel
+
+            estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
+            return estimation
+        
+        else:
+            print("Not new query")
+            A = self.db.A
+            tau = self.db.tau
+            y_vec = self.db.y_vec
+
+            # given measurements 0..i, get posterior samples
+            data_gen = {'D': D,  # number of dimensions
+                        'k': k,  # noise constant
+                        'M': len(A),  # number of measurements so far
+                        'A': A, 
+                        'tau': tau,
+                        'y': y_vec,
+                        'bounds': bounds}
+
+            # get posterior samples
+            print('Start fitting...')
+
+            fit = self.sm.sampling(data=data_gen, iter=self.Niter, chains=self.Nchains, init=0, n_jobs=1)
+            W_samples = fit.extract()['W']
+
+            self.W_samples = W_samples
+            self.mu_W = np.mean(W_samples, 0)
+            print(f"Current estimate: {self.mu_W}")
+            self.Wcov = np.cov(self.W_samples, rowvar=False)  # get covariance
+
+            self.A_sel = self.db.A_sel
+            self.tau_sel = self.db.tau_sel
 
             estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
             return estimation
@@ -750,7 +752,7 @@ def result(request: Request, selected_experiment: int = Query(...)):
                label='Doctor Understand', zorder=10)
     # Adding legend manually
     legend_dict = {'Yes': 'tab:red', 'No': 'tab:blue'}
-    ax.legend(title='Q2', loc='upper left', handles=[plt.Line2D([0], [0], marker='o', color=color, label=label, linestyle='None') for label, color in legend_dict.items()])
+    ax.legend(title='Q2', loc='lower right', handles=[plt.Line2D([0], [0], marker='o', color=color, label=label, linestyle='None') for label, color in legend_dict.items()])
     ax.set(ylim=(0, 6), xlabel='Round', ylabel='Q1')
     fig.savefig('./temporary/validity_summary.png', dpi=300)
 
