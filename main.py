@@ -751,7 +751,6 @@ def result(request: Request, selected_experiment: int = Query(...)):
     # Adding legend manually
     legend_dict = {'Yes': 'tab:red', 'No': 'tab:blue'}
     ax.legend(title='Q2', loc='upper left', handles=[plt.Line2D([0], [0], marker='o', color=color, label=label, linestyle='None') for label, color in legend_dict.items()])
-
     ax.set(ylim=(0, 6), xlabel='Round', ylabel='Q1')
     fig.savefig('./temporary/validity_summary.png', dpi=300)
 
@@ -767,6 +766,13 @@ def result(request: Request, selected_experiment: int = Query(...)):
     closest_neighbor_img_ids = distances.squeeze().argsort()[:5]
     imgdb_pd = read_pd('imgdb')
     closest_neighbor_img_list = ["/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item() for closest_neighbor_img_id in closest_neighbor_img_ids]
+    print(closest_neighbor_img_list)
+
+    # image list
+    # imgdb_pd = read_pd('imgdb')
+    img_paths = {}
+    for index ,row in imgdb_pd.iterrows():
+        img_paths[row['img_id']] = "/img_database_2d/" + row['img_name']
 
     # load plots
     timestamp = get_timestamp()
@@ -781,7 +787,8 @@ def result(request: Request, selected_experiment: int = Query(...)):
                                        "trial_plot": trial_plot,
                                        "validity_plot": validity_plot,
                                        "prediction_plot": prediction_plot,
-                                       "closest_neighbor_img_list": closest_neighbor_img_list})
+                                       "closest_neighbor_img_list": closest_neighbor_img_list,
+                                       'img_paths': img_paths,})
 
 
 # @app.get("/patients")
