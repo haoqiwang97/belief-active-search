@@ -32,6 +32,15 @@ def read_db(table_name: str):
     table_db = cursor.fetchall()
     return table_db
 
+def read_db_by_experiment(table_name: str, experiment_id: int):
+    # read as database format
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT * FROM {table_name} WHERE experiment_id = {experiment_id}")
+    table_db = cursor.fetchall()
+    return table_db
+
 def read_pd(table_name: str) -> pd.DataFrame:
     # read as pandas format
     connection = sqlite3.connect(config.DB_FILE)
@@ -266,6 +275,7 @@ class Database():
         self.y_vec = list(np.where(trials['select_id'] == trials['img1_id'], 1, 0))  # list
         self.response = trials['select_id'].tolist()
 
+        self.mu_W_list = [np.array(ast.literal_eval(s)) for s in trials['mean'].tolist()]
         self.mu_W = [np.array(ast.literal_eval(s)) for s in trials['mean'].tolist()][-1]
         self.Wcov = [np.array(ast.literal_eval(s)) for s in trials['cov'].tolist()][-1]  # only need the last one
         self.A_sel = self.A[-1]
@@ -416,50 +426,81 @@ class BayesEstimate():
         self.Nchains = 4  # number of chains to sample
         self.Niter = int(2*self.db.Nsamples/self.Nchains)  # number of iterations   
 
-    def fit(self, query: Tuple[int, int], response: int) -> dict:
+    def fit(self, query: Optional[Tuple[int, int]] = None, response: Optional[int] = None) -> dict:
         embedding = self.db.embedding
         k_normalization = self.db.k_normalization
-
-        (A_sel, tau_sel) = pair2hyperplane(query, embedding, k_normalization)
-
-        A = self.db.A + [A_sel]  # self.db.A.append(A_sel)
-        tau = np.append(self.db.tau, tau_sel)
-
-        response_binary = 1 if response == query[0] else 0
-        y = response_binary
-        y_vec = self.db.y_vec + [y]
-
         D = self.db.D
         k = self.db.k
         bounds = self.db.bounds
+
+        if query == None and response == None:
+            A = self.db.A
+            tau = self.db.tau
+            y_vec = self.db.y_vec
+
+            # given measurements 0..i, get posterior samples
+            data_gen = {'D': D,  # number of dimensions
+                        'k': k,  # noise constant
+                        'M': len(A),  # number of measurements so far
+                        'A': A, 
+                        'tau': tau,
+                        'y': y_vec,
+                        'bounds': bounds}
+
+            # get posterior samples
+            print('Start fitting...')
+
+            fit = self.sm.sampling(data=data_gen, iter=self.Niter, chains=self.Nchains, init=0, n_jobs=1)
+            W_samples = fit.extract()['W']
+
+            self.W_samples = W_samples
+            self.mu_W = np.mean(W_samples, 0)
+            print(f"Current estimate: {self.mu_W}")
+            self.Wcov = np.cov(self.W_samples, rowvar=False)  # get covariance
+
+            self.A_sel = self.db.A_sel
+            self.tau_sel = self.db.tau_sel
+
+            estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
+            return estimation
         
-        # given measurements 0..i, get posterior samples
-        data_gen = {'D': D,  # number of dimensions
-                    'k': k,  # noise constant
-                    'M': len(A),  # number of measurements so far
-                    'A': A, 
-                    'tau': tau,
-                    'y': y_vec,
-                    'bounds': bounds}
+        else:
+            (A_sel, tau_sel) = pair2hyperplane(query, embedding, k_normalization)
 
-        # get posterior samples
-        print('Start fitting...')
+            A = self.db.A + [A_sel]  # self.db.A.append(A_sel)
+            tau = np.append(self.db.tau, tau_sel)
 
-        fit = self.sm.sampling(data=data_gen, iter=self.Niter, chains=self.Nchains, init=0, n_jobs=1)
-        W_samples = fit.extract()['W']
+            response_binary = 1 if response == query[0] else 0
+            y = response_binary
+            y_vec = self.db.y_vec + [y]
 
-        self.W_samples = W_samples
-        self.mu_W = np.mean(W_samples, 0)
-        print(f"Current estimate: {self.mu_W}")
-        self.Wcov = np.cov(self.W_samples, rowvar=False)  # get covariance
+            # given measurements 0..i, get posterior samples
+            data_gen = {'D': D,  # number of dimensions
+                        'k': k,  # noise constant
+                        'M': len(A),  # number of measurements so far
+                        'A': A, 
+                        'tau': tau,
+                        'y': y_vec,
+                        'bounds': bounds}
 
-        self.A_sel = A_sel
-        self.tau_sel = tau_sel
+            # get posterior samples
+            print('Start fitting...')
 
-        estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
-        return estimation
+            fit = self.sm.sampling(data=data_gen, iter=self.Niter, chains=self.Nchains, init=0, n_jobs=1)
+            W_samples = fit.extract()['W']
 
-    def plot(self, query: Tuple[int, int], response: int, user=None):
+            self.W_samples = W_samples
+            self.mu_W = np.mean(W_samples, 0)
+            print(f"Current estimate: {self.mu_W}")
+            self.Wcov = np.cov(self.W_samples, rowvar=False)  # get covariance
+
+            self.A_sel = A_sel
+            self.tau_sel = tau_sel
+
+            estimation = {'mean': self.mu_W, 'a': self.A_sel, 'tau': self.tau_sel, 'cov': self.Wcov}
+            return estimation
+
+    def plot(self, query: Optional[Tuple[int, int]] = None, response: Optional[int] = None, user=None):
         W_samples = self.W_samples
         A_sel = self.A_sel#self.A[-1]
         tau_sel = self.tau_sel#self.tau[-1]
@@ -492,8 +533,9 @@ class BayesEstimate():
         # plot landmarks
         plt.scatter(embedding[:, 0], embedding[:, 1], s=25, c='black', zorder=2)
         # plot pair shown this round
-        plt.scatter(embedding[query[0], 0], embedding[query[0], 1], s=25, c='m', zorder=2)
-        plt.scatter(embedding[query[1], 0], embedding[query[1], 1], s=25, c='m', zorder=2)
+        if not query == None:
+            plt.scatter(embedding[query[0], 0], embedding[query[0], 1], s=25, c='m', zorder=2)
+            plt.scatter(embedding[query[1], 0], embedding[query[1], 1], s=25, c='m', zorder=2)
         # plot response
         # plt.scatter(embedding[response, 0], embedding[response, 1], s=80, facecolors='none', edgecolors='r', zorder=2)
 
@@ -678,6 +720,69 @@ async def submit_validity(q1: str = Form(...), q2: str = Form(...), selected_exp
     connection.commit()
 
     return RedirectResponse(url=f"/trial?selected_experiment={selected_experiment}", status_code=303)
+
+@app.get("/result")
+def result(request: Request, selected_experiment: int = Query(...)):
+    # prepare
+    experiment_id = selected_experiment
+    db = Database(experiment_id=selected_experiment)
+    plt.switch_backend('Agg')
+
+    trials = read_db_by_experiment("trials", experiment_id)
+    validities = read_db_by_experiment("validities", experiment_id)
+
+    # trial plot
+    # read trial
+    mean = np.concatenate(db.mu_W_list).reshape(-1, 2)
+    fig, ax = plt.subplots()
+    embedding = db.embedding
+    ax.scatter(embedding[:, 0], embedding[:, 1], s=25, c='black', alpha=0.5)
+    ax.quiver(mean[:-1, 0], mean[:-1, 1], mean[1:, 0]-mean[:-1, 0], mean[1:, 1]-mean[:-1, 1], scale_units='xy', angles='xy', scale=1, width=.005, color='tab:red')
+    ax.set(xlim=(-0.6, 0.6), ylim=(-0.6, 0.6), aspect='equal')
+    fig.savefig('./temporary/trial_summary.png', dpi=300)
+
+    # validity plot
+    validities_pd = read_pd("validities").query('experiment_id == @experiment_id')
+    fig, ax = plt.subplots()
+    ax.plot(validities_pd['round'], validities_pd['score'])
+    ax.scatter(validities_pd['round'], validities_pd['score'], 
+               c=['tab:red' if value == 'Yes' else 'tab:blue' for value in list(validities_pd['doctor_understand'])], 
+               label='Doctor Understand', zorder=10)
+    # Adding legend manually
+    legend_dict = {'Yes': 'tab:red', 'No': 'tab:blue'}
+    ax.legend(title='Q2', loc='upper left', handles=[plt.Line2D([0], [0], marker='o', color=color, label=label, linestyle='None') for label, color in legend_dict.items()])
+
+    ax.set(ylim=(0, 6), xlabel='Round', ylabel='Q1')
+    fig.savefig('./temporary/validity_summary.png', dpi=300)
+
+    # prediction plot
+    be = BayesEstimate(db)
+    be.fit()
+    be.plot()
+
+    # neighbor
+    # db = Database(experiment_id=selected_experiment)
+    estimation = db.latest_estimate()  # maybe no need to do this? no, initialization still need?
+    distances = cdist([estimation['mean']], db.embedding)  # make 2d array
+    closest_neighbor_img_ids = distances.squeeze().argsort()[:5]
+    imgdb_pd = read_pd('imgdb')
+    closest_neighbor_img_list = ["/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item() for closest_neighbor_img_id in closest_neighbor_img_ids]
+
+    # load plots
+    timestamp = get_timestamp()
+    trial_plot = f"/temporary/trial_summary.png?timestamp={timestamp}"
+    validity_plot = f"/temporary/validity_summary.png?timestamp={timestamp}"
+    prediction_plot = f"/temporary/search.png?timestamp={timestamp}"
+
+    return templates.TemplateResponse("result.html", 
+                                      {"request": request, 
+                                       "trials": trials, 
+                                       "validities": validities,
+                                       "trial_plot": trial_plot,
+                                       "validity_plot": validity_plot,
+                                       "prediction_plot": prediction_plot,
+                                       "closest_neighbor_img_list": closest_neighbor_img_list})
+
 
 # @app.get("/patients")
 # def patients(request: Request):
