@@ -57,6 +57,7 @@ cursor = connection.cursor()
 # """, (1, 'English', 'Non-Hispanic', 'Asian', 'Female', 'Female', 50)
 # )
 
+# 1 patients
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS patients (
@@ -73,7 +74,7 @@ INSERT INTO patients (number, language) VALUES (?, ?);
 """, (1, 'English')
 )
 
-# providers
+# 2 providers
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS providers (
@@ -90,7 +91,7 @@ INSERT INTO providers (number, name) VALUES (?, ?);
 """, (1, 'Wang')
 )
 
-# participants
+# 3 participants
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS participants (
@@ -117,7 +118,7 @@ INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
 """, ('patient', 1, 1)
 )
 
-# visits
+# 4 visits
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS visits (
@@ -133,10 +134,10 @@ FOREIGN KEY(participant_id) REFERENCES participants(id)
 cursor.execute(
 """
 INSERT INTO visits (participant_id, date, next_procedure) VALUES (?, ?, ?);
-""", (1, '2023-09-27', 'nipple reconstruction')
+""", (1, '2023-09-27', 'bilateral implant reconstruction')
 )
 
-# experiments
+# 5 experiments
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS experiments (
@@ -151,10 +152,10 @@ FOREIGN KEY(visit_id) REFERENCES visits(id)
 cursor.execute(
 """
 INSERT INTO experiments (visit_id, parameter_id) VALUES (?, ?);
-""", (1, 1)
+""", (1, 3)
 )
 
-# perceptual_map
+# 6 perceptual_map
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS perceptual_map (
@@ -166,18 +167,18 @@ y FLOAT NOT NULL
 """
 )
 
-# import pandas as pd
-# import os
+import pandas as pd
+import os
 
-# perceptual_map = pd.read_csv(os.path.join(os.getcwd(), 'data/best_embedding_2023-08-31.csv'), header=None)
-# for index, row in perceptual_map.iterrows():
-#     cursor.execute(
-#     """
-#     INSERT INTO perceptual_map (imgdb_img_id, x, y) VALUES (?, ?, ?);
-#     """, (index, row[0], row[1])
-#     )
+perceptual_map = pd.read_csv(os.path.join(os.getcwd(), 'data/best_embedding_2023-11-13.csv'), header=None)
+for index, row in perceptual_map.iterrows():
+    cursor.execute(
+    """
+    INSERT INTO perceptual_map (imgdb_img_id, x, y) VALUES (?, ?, ?);
+    """, (index, row[0], row[1])
+    )
 
-# imgdb
+# 7 imgdb
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS imgdb (
@@ -194,43 +195,43 @@ breast_state TEXT NOT NULL
 """
 )
 
-# import pandas as pd
-# # read data
-# img_num_map = pd.read_csv("./data/img_num_map.csv").query('img_id < 10000')
+import pandas as pd
+# read data
+img_num_map = pd.read_csv("./data/img_num_map.csv").query('img_id < 10000')
 
-# # extract participant number, only need first 3 numbers
-# img_num_map_participant_number = img_num_map['img_name'].str.split('_', expand=True).iloc[:, 2].str[:3].astype(int)
-# img_num_map['img_name_participant'] = img_num_map_participant_number
+# extract participant number, only need first 3 numbers
+img_num_map_participant_number = img_num_map['img_name'].str.split('_', expand=True).iloc[:, 2].str[:3].astype(int)
+img_num_map['img_name_participant'] = img_num_map_participant_number
 
-# img_base = pd.read_csv("./data/20220801_process_checkpoint_ps.csv")
+img_base = pd.read_csv("./data/20220801_process_checkpoint_ps.csv")
 
-# # breast state cluster
-# breast_states_cluster = (pd.read_csv("./data/breast_states_clusters.csv").loc[:, ['ImageFrom', 'cluster']].
-#                          rename(columns={'cluster': 'BREAST_STATE_CLUSTER'}))
+# breast state cluster
+breast_states_cluster = (pd.read_csv("./data/breast_states_clusters.csv").loc[:, ['ImageFrom', 'cluster']].
+                         rename(columns={'cluster': 'BREAST_STATE_CLUSTER'}))
 
-# # merge df, drop columns, change column types
-# df_master = (img_base
-#              .pipe(pd.merge, img_num_map, how='left', left_on='PARTICIPANT_NUMBER', right_on='img_name_participant')
-#              .pipe(pd.merge, breast_states_cluster, how='left', left_on='BREAST_STATE', right_on='ImageFrom')
-#              .pipe(pd.DataFrame.drop, columns=["FILE_NAME", "IMAGE_ID", "DOWNLOAD", "PROCESS", "N_3D_IMAGES",
-#                                                "VISIT_NUMBER", "IMG_ID", "SURGEON_MARKING", "FILLHOLES", "TATTOO",
-#                                                "NEED_PS", "PS_DATE", "img_name_participant", "img_relative_path", 
-#                                                "ImageFrom", "img_path"])
-#              .pipe(pd.DataFrame.astype, {'NEW_RACE': 'category', 'BREAST_STATE': 'category',
-#                                          'AGE_CATEGORY': 'category', 'BMI_CATEGORY': 'category',
-#                                          'DAYS_SINCE_RECON_CATEGORY': 'category', 'BREAST_STATE_CLUSTER': 'category'})
-#              )
+# merge df, drop columns, change column types
+df_master = (img_base
+             .pipe(pd.merge, img_num_map, how='left', left_on='PARTICIPANT_NUMBER', right_on='img_name_participant')
+             .pipe(pd.merge, breast_states_cluster, how='left', left_on='BREAST_STATE', right_on='ImageFrom')
+             .pipe(pd.DataFrame.drop, columns=["FILE_NAME", "IMAGE_ID", "DOWNLOAD", "PROCESS", "N_3D_IMAGES",
+                                               "VISIT_NUMBER", "IMG_ID", "SURGEON_MARKING", "FILLHOLES", "TATTOO",
+                                               "NEED_PS", "PS_DATE", "img_name_participant", "img_relative_path", 
+                                               "ImageFrom", "img_path"])
+             .pipe(pd.DataFrame.astype, {'NEW_RACE': 'category', 'BREAST_STATE': 'category',
+                                         'AGE_CATEGORY': 'category', 'BMI_CATEGORY': 'category',
+                                         'DAYS_SINCE_RECON_CATEGORY': 'category', 'BREAST_STATE_CLUSTER': 'category'})
+             )
 
-# df = df_master.copy()
+df = df_master.copy()
 
-# for index, row in df.iterrows():
-#     cursor.execute(
-#     """
-#     INSERT INTO imgdb (img_id, img_name, participant_number, new_race, age, bmi, days_since_recon, breast_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-#     """, (row['img_id'], row['img_name'], row['PARTICIPANT_NUMBER'], row['NEW_RACE'], row['AGE'], row['BMI'], row['DAYS_SINCE_RECON'], row['BREAST_STATE'])
-#     )
+for index, row in df.iterrows():
+    cursor.execute(
+    """
+    INSERT INTO imgdb (img_id, img_name, participant_number, new_race, age, bmi, days_since_recon, breast_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    """, (row['img_id'], row['img_name'], row['PARTICIPANT_NUMBER'], row['NEW_RACE'], row['AGE'], row['BMI'], row['DAYS_SINCE_RECON'], row['BREAST_STATE'])
+    )
 
-# parameters
+# 8 parameters
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS parameters (
@@ -252,13 +253,13 @@ INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES 
 cursor.execute(
 """
 INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
-""", ("active pair selection", 1.204, "CONSTANT", "BT")
+""", ("active pair selection", 2.037, "CONSTANT", "BT")
 )
 
 cursor.execute(
 """
 INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
-""", ("active pair selection", 5.329, "DECAYING", "BT")
+""", ("active pair selection", 5.466, "DECAYING", "BT")
 )
 
 ############################################
@@ -288,7 +289,7 @@ INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES 
 # """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', 0.20, -0.23, 0.19, 0.21)
 # )
 
-# trials
+# 9 trials
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS trials (
@@ -322,7 +323,7 @@ FOREIGN KEY(experiment_id) REFERENCES experiments(id)
 # """, (1, 1, 2, 3, 2, '2023-04-10 10:39:37', json.dumps(mean.tolist()), json.dumps(cov.tolist()), json.dumps(a.tolist()), tau)
 # )
 
-# validities
+# 10 validities
 cursor.execute(
 """
 CREATE TABLE IF NOT EXISTS validities (
