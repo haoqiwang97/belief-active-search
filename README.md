@@ -47,10 +47,12 @@ ACI_PERS_LOCATION=eastus
 ACI_PERS_SHARE_NAME=beliefshare
 
 # Create resource group
+# if not first time, skip this
 az group create --name $ACI_PERS_RESOURCE_GROUP --location $ACI_PERS_LOCATION
 
 # Create an Azure Container Registry
 # previously I used ACR_NAME=bmilbelief, so bmilbelief.azurecr.io is already in use
+# if not first time, skip this
 ACR_NAME=utbmilbelief
 az acr create --resource-group $ACI_PERS_RESOURCE_GROUP --name $ACR_NAME --sku Basic
 
@@ -61,15 +63,16 @@ az acr show --name $ACR_NAME --query loginServer --output table
 # Tag container image
 acrLoginServer=utbmilbelief.azurecr.io
 # acrLoginServer=$(az acr show --name $ACR_NAME --query loginServer)
-docker tag belief $acrLoginServer/belief:v1
+docker tag belief $acrLoginServer/belief:v5
 
 # Push image to ACR (Azure Container Registry)
-docker push $acrLoginServer/belief:v1
+docker push $acrLoginServer/belief:v5
 
 # List images in Azure Container Registry
 az acr repository list --name $ACR_NAME --output table
 
 # Create the storage account with the parameters
+# if not first time, skip this
 az storage account create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $ACI_PERS_STORAGE_ACCOUNT_NAME \
@@ -113,12 +116,12 @@ az container create \
     --azure-file-volume-mount-path /app/database/ \
     --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
 
-# update container, note v1 -> v4
-# need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algo that needs less cpu
+# update container, note v1 -> v5
+# need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algorithm that needs less cpu
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v4 \
+    --image utbmilbelief.azurecr.io/belief:v5 \
     --dns-name-label utbmilbelief \
     --ports 80 \
     --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
