@@ -86,6 +86,9 @@
             <div class="ui buttons">
                 <a href="/experimentslist" class="ui button">Back</a>
             </div>
+            <div class="ui buttons">
+                <a class="ui red button" onclick="refreshPage()">Abstain</a>
+            </div>
         </div>        
     </div>
 
@@ -124,6 +127,10 @@
         function updateRounds(rounds) {
             document.getElementById('numberRounds').innerText = rounds;
             document.getElementById('numberRoundsSpanish').innerText = rounds;
+        }
+
+        function refreshPage() {
+            location.reload();
         }
     </script>
 </body>
