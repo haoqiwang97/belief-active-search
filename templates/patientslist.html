@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1><a href="/home">Home</a>
+    <i class="angle double right icon"></i>
+</h1>
+
+    <h2>Patients in database</h2>
+    <table class="ui striped table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Number</th>
+                <th>Language</th>
+                <!-- <th>Ethnicity</th>
+                <th>Race</th>
+                <th>Gender</th>
+                <th>Sex</th>
+                <th>Age</th> -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td>{{ patient.id }}</td>
+                <td>{{ patient.number }}</td>
+                <td>{{ patient.language }}</td>
+                <!-- <td>{{ patient.ethnicity }}</td>
+                <td>{{ patient.race }}</td>
+                <td>{{ patient.gender }}</td>
+                <td>{{ patient.sex }}</td>
+                <td>{{ patient.age }}</td> -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Add a new patient</h2>
+    <form class="ui form" action="/submit-patient" method="post">
+        <div class="field">
+            <label>Number</label>
+            <div class="two fields">
+                <div class="field">
+                    <input type="number" name="number" placeholder="1">
+                </div>
+            </div>
+        </div>
+        <div class="two fields">
+            <div class="field">
+                <label>(Language) Do you prefer English or Spanish?</label>
+                <select class="ui fluid dropdown" name="language">
+                    <option value=""></option>
+                    <option value="English">English</option>
+                    <option value="Spanish">Spanish</option>
+                </select>
+            </div>
+        </div>
+        <!-- <div class="two fields">
+            <div class="field">
+                <label>Ethnicity</label>
+                <select class="ui fluid dropdown" name="ethnicity">
+                    <option value=""></option>
+                    <option value="Non-Hispanic">Non-Hispanic</option>
+                    <option value="Hispanic">Hispanic</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Race</label>
+                <select class="ui fluid dropdown" name="race">
+                    <option value=""></option>
+                    <option value="White">White</option>
+                    <option value="Black or African American">Black or African American</option>
+                    <option value="American Indian and Alaska Native">American Indian and Alaska Native</option>
+                    <option value="Asian">Asian</option>
+                    <option value="Native Hawaiian and Other Pacific Islander">Native Hawaiian and Other Pacific Islander</option>
+                    <option value="Two or more races">Two or more races</option>
+                </select>
+            </div>
+        </div> -->
+        <!-- <div class="two fields">
+            <div class="field">
+                <label>(Gender) Do you think of yourself as: </label>
+                <select class="ui fluid dropdown" name="gender">
+                    <option value=""></option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Transgender man/trans man/female-to-male (FTM)">Transgender man/trans man/female-to-male (FTM)</option>
+                    <option value="Transgender woman/trans woman/male-to-female (MTF)">Transgender woman/trans woman/male-to-female (MTF)</option>
+                    <option value="Gender queer/gender nonconforming neither exclusively male nor female">Gender queer/gender nonconforming neither exclusively male nor female</option>
+                    <option value="Additional gender category (or other); please specify:">Additional gender category (or other)</option>
+                    <option value="Decline to answer">Decline to answer</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>(Sex) What sex was originally listed on your birth certificate?</label>
+                <select class="ui fluid dropdown" name="sex">
+                    <option value=""></option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Decline to answer">Decline to answer</option>
+                </select>
+            </div>
+        </div> -->
+        <!-- <div class="two fields">
+            <div class="field">
+                <label>(Age) How old are you in years?</label>
+                <input type="number" name="age" placeholder="">
+            </div>
+        </div> -->
+        <input type="submit">
+    </form>
+
+    <a target="_blank" rel="noopener noreferrer" href="https://utexas.qualtrics.com/jfe/form/SV_cSWiWj6orasVSkK">Click here to complete demographic survey</a>
+{% endblock %}

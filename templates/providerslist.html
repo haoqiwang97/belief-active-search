@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1><a href="/home">Home</a>
+    <i class="angle double right icon"></i>
+</h1>
+
+    <h2>Providers in database</h2>
+    <table class="ui striped table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Number</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for provider in providers %}
+            <tr>
+                <td>{{ provider.id }}</td>
+                <td>{{ provider.number }}</td>
+                <td>{{ provider.name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Add a new provider</h2>
+    <form class="ui form" action="/submit-provider" method="post">
+        <div class="field">
+            <label>Number</label>
+            <div class="two fields">
+                <div class="field">
+                    <input type="number" name="number" placeholder="1">
+                </div>
+            </div>
+        </div>
+        <div class="two fields">
+            <div class="field">
+                <label>Name</label>
+                <input type="text" name="name" placeholder="Enter provider name">
+            </div>
+        </div>
+
+        <input type="submit">
+    </form>
+{% endblock %}

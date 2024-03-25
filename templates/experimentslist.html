@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1><a href="/home">Home</a>
+    <i class="angle double right icon"></i>
+</h1>
+
+<h2>Experiments in database</h2>
+<form class="ui form" action="/trial" method="GET">
+    <table class="ui striped table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Visit ID</th>
+                <th>Parameter ID</th>
+                <th>Number of rounds</th>
+                <th>Select</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for experiment in experiments %}
+            <tr>
+                <td>{{ experiment.id }}</td>
+                <td>{{ experiment.visit_id }}</td>
+                <td>{{ experiment.parameter_id }}</td>
+                <!-- <td>{{ experiment.round_count }}</td> -->
+                <td>{{ number_rounds_list[loop.index0] }}</td>
+                <td>
+                    <input type="radio" name="selected_experiment" value="{{ experiment.id }}">
+                    <!-- <input type="hidden" name="round_count" value="{{ experiment.round_count }}"> -->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <input type="submit" value="Start/Continue experiment" class="ui red big button">
+    <input type="submit" value="Result" class="ui blue big button" formaction="/result">
+</form>
+
+<h2>Create a new experiment for visit</h2>
+<h3>Parameters in database</h3>
+<table class="ui striped table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Algorithm</th>
+            <th>k</th>
+            <th>Response model</th>
+            <th>Probability model</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for parameter in parameters %}
+        <tr>
+            <td>{{ parameter.id }}</td>
+            <td>{{ parameter.algorithm }}</td>
+            <td>{{ parameter.k }}</td>
+            <td>{{ parameter.response_model }}</td>
+            <td>{{ parameter.probability_model }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<form class="ui form" action="/submit-experiment" method="POST">
+    <h3>Visits in database</h3>
+    <table class="ui striped table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Participant ID</th>
+                <th>Date</th>
+                <th>Next procedure</th>
+                <th>Select</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in visits %}
+            <tr>
+                <td>{{ visit.id }}</td>
+                <td>{{ visit.participant_id }}</td>
+                <td>{{ visit.date }}</td>
+                <td>{{ visit.next_procedure }}</td>
+                <td><input type="radio" name="selected_visit" value="{{ visit.id }}"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="field">
+        <div class="two fields">
+            <div class="field">
+                <label>Select parameter</label>
+                <select class="ui fluid dropdown" name="selected_parameter">
+                    <option value=""></option>
+                    {% for parameter in parameters %}
+                    <option value="{{ parameter.id }}">{{ parameter.id }} {{ parameter.algorithm }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <input type="submit" value="Create experiment">
+</form>
+
+{% endblock %}

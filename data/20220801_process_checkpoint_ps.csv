@@ -1,0 +1,101 @@
+PARTICIPANT_NUMBER,VISIT_NUMBER,IMAGE_ID,DOWNLOAD,PROCESS,FILE_NAME,NEW_RACE,AGE,BMI,N_3D_IMAGES,DAYS_SINCE_RECON,BREAST_STATE,AGE_CATEGORY,BMI_CATEGORY,DAYS_SINCE_RECON_CATEGORY,IMG_ID,SURGEON_MARKING,FILLHOLES,TATTOO,NEED_PS,PS_DATE
+120,03 months,16787,yes,yes,3D_120_3M_052011_HH2_FILLED.tsb,black_africanamerican_non_hispanic,43,33.76009754610577,4,77,uni_autologous,35to45,30to35,0to100,img1,,,,yes,2022-07-05
+158,12 months,14857,yes,yes,3D_158_12M_060712_UpRightHH4_trimmed.tsb,black_africanamerican_non_hispanic,56,36.66785332858668,4,398,uni_partialmast_norearrange_sym,55to65,35to40,300to400,img22,,,,yes,2022-07-05
+165,06 months,13268,yes,yes,3D_165_6M_121311_UprightHH1_trim.tsb,asian_non_hispanic,42,22.382812499999996,2,204,uni_autologous,35to45,18.5to25,200to300,img37,,,,,
+166,06 months,13589,yes,yes,3D_166v2_6M_110211_UprightHH1_trim.tsb,white_non_hispanic,65,25.2761148546659,2,-1,uni_expander_ld_sym,largerthan65,25to30,lessthen0,img41,,,,,
+172,12 months,15041,yes,yes,3D_172v3_061312_UpRightHH1_trimmed.tsb,white_non_hispanic,58,21.98753462603878,4,378,uni_autologous,55to65,18.5to25,300to400,img46,,,,,
+175,18+ months,17976,yes,yes,3D_175_18M+_061113_UpRightHH3_trimmed.tsb,white_non_hispanic,37,24.86916304921092,4,466,bi_implant_ld,35to45,18.5to25,400to500,img53,,,,yes,2022-08-02
+198,06 months,14826,yes,yes,3D_198_6M_041012_UpRightHH2_Trim_FILLED.tsb,white_non_hispanic,62,24.75761772853186,3,225,uni_autologous,55to65,18.5to25,200to300,img71,,,,,
+205,18 months,17934,yes,yes,3D_205_18M_051513_UpRightHH4_Trimmed.tsb,white_non_hispanic,57,28.554687499999996,4,449,uni_autologous,55to65,25to30,400to500,img85,,,,,
+209,09 months,16343,yes,yes,3D_209_9M_071812_UpRightHH1_Trim.tsb,white_hispanic,34,33.62208773387128,1,254,uni_autologous,25to35,30to35,200to300,img94,,,,,
+211,06 months,14014,yes,yes,3D_211_6M_042312_UpRightHH3_Trim.tsb,black_africanamerican_non_hispanic,53,27.6953125,4,165,uni_expander,45to55,25to30,100to200,img100,,,,yes,2022-07-05
+223,09 months,17940,yes,yes,3D_223_9M_071614_UprightF2_TRIMMED.tsb,white_hispanic,69,30.865340252106108,2,237,bi_implant,largerthan65,30to35,200to300,img127,,,,,
+504,09 months,14028,yes,yes,3D_504_9M_051712_UpRightHH3_trimmed.tsb,white_non_hispanic,48,37.29068808490803,4,241,bi_autologous,45to55,35to40,200to300,img147,,,,,
+507,06 months,15402,yes,yes,3D_507_6M_082212_UpRightHH2_trimmed_FILLED.tsb,white_hispanic,36,35.91836734693877,4,85,uni_implant_sym,35to45,35to40,0to100,img154,,,,yes,2022-07-05
+510,03 months,14038,yes,yes,3D_510_3M_042012_uprightHH1_trimmed_FILLED.tsb,white_hispanic,60,32.53681690940809,3,84,bi_autologous,55to65,30to35,0to100,img157,,,,yes,2022-07-05
+511,06 months,16366,yes,yes,3D_511_6M_081312_UpRightHH3_trimmed.tsb,white_hispanic,51,23.948741290571064,4,195,uni_rearrange,45to55,18.5to25,100to200,img161,,,,yes,2022-07-05
+513,06 months,15342,yes,yes,3D_513_6M_082312_UpRightHH3_Trim_FILLED.tsb,black_africanamerican_non_hispanic,49,39.99999999999999,4,66,uni_implant_sym,45to55,35to40,0to100,img166,,,,yes,2022-07-05
+517,12 months,18000,yes,yes,3D_517_12M_022613_UpRightHH4_trimmed.tsb,white_non_hispanic,48,46.91712475053395,1,385,uni_partialmast_norearrange_sym,45to55,largerthan40,300to400,img176,,,,,
+526,00 months - baseline,13873,yes,yes,3D_526_022212_UpRightHH2_FILLED.tsb,americanindian_alaskan_non_hispanic,58,32.38835543362292,4,-160,uni_partialmast_norearrange,55to65,30to35,lessthen0,img193,yes,,,yes,2022-08-02
+529,00 months - baseline,14058,yes,yes,3D_529_030112_uprightHH3_trimmed.tsb,asian_non_hispanic,46,25.10387811634349,4,-176,bi_native_cosmetic,45to55,25to30,lessthen0,img206,yes,,,yes,2022-08-02
+542,06 months,17192,yes,yes,3D_542_6M_100412_UpRightHH4_Trim.tsb,white_non_hispanic,24,17.9271302075773,4,-120,bi_expander_ld,lessthan25,lessthen18.5,lessthen0,img225,,,,,
+545,18 months,20568,yes,yes,3D_545_18M_072313_UpRightHH3_trimmed_FILLED.tsb,white_non_hispanic,60,36.583988859196815,4,475,uni_autologous_sym,55to65,35to40,400to500,img233,,,,yes,2022-07-05
+547,03 months,17302,yes,yes,3D_547_3M_120612_UpRightHH2_Trimmed.tsb,white_non_hispanic,34,40.30339083878645,4,-125,bi_mixed_expander_nobreast,25to35,largerthan40,lessthen0,img238,,,,,
+553,12 months,19234,yes,yes,3D_553_12M_062013_uprightHH3_trimmed.tsb,white_non_hispanic,30,35.00408163265306,4,246,bi_implant,25to35,35to40,200to300,img258,,,,,
+559,12 months,19275,yes,yes,3D_559_12M_061213_UpRightHH2_Trimmed.tsb,black_africanamerican_non_hispanic,47,23.910034602076124,4,239,bi_expander,45to55,18.5to25,200to300,img268,,,,yes,2022-07-05
+562,03 months,16523,yes,yes,3D_562_3M_092812_uprightHH1_trimmed.tsb,asian_non_hispanic,47,25.274859020649924,4,140,bi_autologous,45to55,25to30,100to200,img272,,,,yes,2022-07-05
+566,18 months,19347,yes,yes,3D_566_18M_082313_uprightHH4_trimmed.tsb,white_non_hispanic,44,30.712484474387445,4,-20,bi_mixed_expander_ld,35to45,30to35,lessthen0,img284,,,,,
+569,12 months,19417,yes,yes,3D_569_12M_040313_uprightHH3_trimmed_FILLED.tsb,black_africanamerican_non_hispanic,50,34.369492068578744,1,71,bi_implant_ld,45to55,30to35,0to100,img290,,,,yes,2022-07-05
+578,18+ months,19463,yes,yes,3D_578_18M+_123014_UprightF4_TRIMMED.tsb,white_non_hispanic,58,36.46863905325444,4,743,bi_implant,55to65,35to40,largerthan500,img310,,,,,
+585,18+ months,21200,yes,yes,3D_585_18M+_052715_UprightF4_TRIMMED.tsb,white_non_hispanic,51,41.59580498866214,3,1084,uni_implant_sym,45to55,largerthan40,largerthan500,img327,,,,,
+594,06 months,21302,yes,yes,3D_594_6M_120612_UpRightHH4_Trimmed.tsb,white_non_hispanic,58,23.6734693877551,4,170,bi_nobreast,55to65,18.5to25,100to200,img340,,,,,
+597,00 months - baseline,15068,yes,yes,3D_597_B_061512_UpRightHH3_trimmed.tsb,white_non_hispanic,62,30.443839128344813,4,-3,bi_mixed_expander_implant,55to65,30to35,lessthen0,img347,yes,,,yes,2022-08-02
+607,09 months,19590,yes,yes,3D_607_9M_031913_UpRightHH2_trimmed.tsb,white_non_hispanic,56,22.075298438934805,4,265,uni_implant_ld_sym,55to65,18.5to25,200to300,img373,,,,yes,2022-07-05
+608,03 months,16426,yes,yes,3D_608_3M_101012_UpRightHH3_Trim.tsb,white_non_hispanic,64,24.023808670084986,4,104,uni_implant_ld_sym,55to65,18.5to25,100to200,img375,,,,yes,2022-07-05
+610,09 months,19599,yes,yes,3D_610_9M_042513_UpRightHH4_Trimmed.tsb,white_non_hispanic,49,41.37494561132866,4,-405,uni_expander,45to55,largerthan40,lessthen0,img379,,,,yes,2022-07-05
+624,12 months,19659,yes,yes,3D_624_12M_091013_UprightHH2_trimmed.tsb,white_non_hispanic,61,24.70688466063532,4,274,bi_implant_ld,55to65,18.5to25,200to300,img411,,,,yes,2022-07-05
+626,18+ months,21945,yes,yes,3D_626_18M+_073015_uprightF3_TRIMMED_FILLED[1].tsb,white_non_hispanic,51,36.57382368848027,3,1085,uni_autologous_sym,45to55,35to40,largerthan500,img415,,,,,
+632,06 months,21643,yes,yes,3D_632_6M_031413_UpRightHH3_Trimmed.tsb,white_non_hispanic,35,21.921274922198283,4,225,uni_implant,35to45,18.5to25,200to300,img430,,,,yes,2022-07-05
+644,18 months,19318,yes,yes,3D_644_18M_091214_uprightF4_TRIMMED.tsb,white_hispanic,50,36.35816176747337,4,521,uni_implant_sym,45to55,35to40,largerthan500,img457,,,yes,yes,2022-07-05
+650,03 months,16964,yes,yes,3D_650_3M_121912_UpRightHH2_Trimmed.tsb,white_hispanic,35,23.82052063167618,4,111,uni_autologous,35to45,18.5to25,100to200,img462,,,,yes,2022-07-05
+654,09 months,19619,yes,yes,3D_654_9M_072613_uprightHH4_trimmed.tsb,white_non_hispanic,32,31.04188734675069,8,304,bi_autologous,25to35,30to35,300to400,img470,,,,yes,2022-07-05
+655,00 months - baseline,17399,yes,yes,3D_655_B_091012_UpRightHH4_trimmed_FILLED.tsb,white_hispanic,39,28.288757396449704,4,-360,uni_partialmast_norearrange,35to45,25to30,lessthen0,img473,,,,,
+656,00 months - baseline,17225,yes,yes,3D_656_B_091012_UpRightHH3_trimmed.tsb,black_africanamerican_non_hispanic,67,22.51241788174972,4,-1,uni_partialmast_norearrange,largerthan65,18.5to25,lessthen0,img477,,,,yes,2022-07-05
+665,09 months,17491,yes,yes,3D_665_9M_071613_UpRightHH2_trimmed.tsb,white_hispanic,35,32.81565593370026,1,158,bi_autologous,35to45,30to35,100to200,img499,,,,yes,2022-08-02
+675,00 months - baseline,17250,yes,yes,3D_675_B_101212_UpRightHH4_Trim.tsb,white_non_hispanic,63,30.664827986645378,1,0,uni_nobreast,55to65,30to35,0to100,img517,yes,,,yes,2022-08-02
+676,18 months,17548,yes,yes,3D_676_18M_061214_UprightF3_trimmed_FILLED.tsb,black_africanamerican_non_hispanic,52,41.07619634421852,3,276,uni_implant_sym,45to55,largerthan40,200to300,img522,,,,,
+686,03 months,17012,yes,yes,3D_686_3M_011013_UpRightHH2_Trimmed.tsb,white_non_hispanic,62,31.12038219542792,1,76,uni_autologous,55to65,30to35,0to100,img539,,,,yes,2022-08-02
+690,03 months,17023,yes,yes,3D_690_3M_012913_UpRightHH1_Trimmed.tsb,white_non_hispanic,43,36.12903225806451,4,78,bi_implant,35to45,35to40,0to100,img546,,,,,
+691,09 months,17608,yes,yes,3D_691_9M_070813_UpRightHH1_trimmed.tsb,white_non_hispanic,36,26.745536362316734,1,244,bi_mixed_expander_autologous,35to45,25to30,200to300,img548,,,,,
+694,18 months,20965,yes,yes,3D_694_18M_061914_UprightF4_trimmed.tsb,white_hispanic,54,27.34375,4,583,uni_ld_sym,45to55,25to30,largerthan500,img557,,,,,
+696,00 months - baseline,16506,yes,yes,3D_696_B_111412_UpRightHH1_Trimmed.tsb,asian_non_hispanic,32,21.217899306259888,1,-2,bi_expander,25to35,18.5to25,lessthen0,img563,,,,yes,2022-08-02
+706,03 months,17042,yes,yes,3D_706_3M_022013_UpRightHH4_trimmed.tsb,white_non_hispanic,66,24.38670344026709,4,70,bi_implant_ld,largerthan65,18.5to25,0to100,img584,,,,yes,2022-08-02
+713,12 months,17764,yes,yes,3D_713_12M_012914_UprightF3_trimmed.tsb,white_non_hispanic,45,21.9671201814059,4,-1,uni_expander_ld,45to55,18.5to25,lessthen0,img600,yes,,,yes,2022-07-05
+717,03 months,17802,yes,yes,3D_717_3M_041213_uprightHH2_trimmed.tsb,white_non_hispanic,56,22.817460317460323,4,106,uni_implant,55to65,18.5to25,100to200,img609,,,,yes,2022-08-02
+719,18 months,17945,yes,yes,3D_719_18M_061714_UprightF2_trimmed.tsb,white_hispanic,42,23.90003387406376,3,412,bi_implant_ld,35to45,18.5to25,400to500,img616,,,,,
+721,18 months,17857,yes,yes,3D_721_18M_041714_uprightF3_TRIMMED.tsb,white_non_hispanic,33,20.472525533106715,1,177,bi_implant_ld,25to35,18.5to25,100to200,img622,,,,,
+727,18 months,22710,yes,yes,3D_727_18M_081414_uprightF4_TRIMMED.tsb,white_non_hispanic,68,35.71276004955359,1,433,bi_implant,largerthan65,35to40,400to500,img635,,,,,
+730,03 months,20297,yes,yes,3D_730_3M_082114_uprightF1_TRIMMED.tsb,asian_non_hispanic,53,32.93794726007254,4,106,bi_autologous,45to55,30to35,100to200,img640,yes,,,yes,2022-08-02
+733,18 months,18039,yes,yes,3D_733_18M_032614_UprightF3_TRIMMED.tsb,white_non_hispanic,63,33.44778365032213,4,428,bi_implant_ld,55to65,30to35,400to500,img645,,,,,
+739,12 months,20999,yes,yes,3D_739_12M_041114_uprightF3_TRIMMED.tsb,white_non_hispanic,50,18.931837856148142,4,410,bi_mixed_implant_autologous,45to55,18.5to25,400to500,img659,,,,,
+740,06 months,18112,yes,yes,3D_740_6M_081513_uprightHH3_trimmed_FILLED.tsb,black_africanamerican_non_hispanic,47,36.45034454339416,2,198,uni_rearrange_sym,45to55,35to40,100to200,img661,,,,yes,2022-07-05
+745,12 months,18169,yes,yes,3D_745_12M_031014_uprightF4_trimmed.tsb,white_non_hispanic,63,21.36009706028104,4,398,uni_rearrange,55to65,18.5to25,300to400,img668,,,,,
+747,18 months,19934,yes,yes,3D_747_18M_092314_UprightF1_TRIMMED.tsb,white_hispanic,75,28.22838646542964,4,587,uni_implant,largerthan65,25to30,largerthan500,img673,,,,,
+750,12 months,21009,yes,yes,3D_750_12M_040314_uprightF4_TRIMMED.tsb,white_non_hispanic,61,25.47477324263039,4,421,uni_rearrange,55to65,25to30,400to500,img678,,,,,
+751,18 months,19923,yes,yes,3D_751_18M_101414_UprightF2_trimmed.tsb,white_non_hispanic,39,26.587561305238463,4,392,bi_implant_ld,35to45,25to30,300to400,img683,,,,,
+756,18 months,20122,yes,yes,3D_756_18M_101314_UprightF2_trimmed_FILLED.tsb,white_hispanic,47,34.426807760141095,4,598,uni_autologous,45to55,30to35,largerthan500,img695,,,,,
+759,03 months,18296,yes,yes,3D_759_3M_070913_UpRightHH3_trimmed.tsb,asian_non_hispanic,43,20.16308978051848,4,134,bi_implant,35to45,18.5to25,100to200,img707,,,,yes,2022-08-02
+761,12 months,18314,yes,yes,3D_761_12M_040914_UprightF1_trimmed.tsb,white_hispanic,33,29.585798816568044,4,405,uni_autologous,25to35,25to30,400to500,img714,,,,,
+764,03 months,18347,yes,yes,3D_764_3M_053113_uprightHH3_trimmed.tsb,white_non_hispanic,53,29.95152354570637,2,0,bi_expander,45to55,25to30,0to100,img720,yes,,,yes,2022-08-02
+780,18 months,20002,yes,yes,3D_780_18M_101314_UprightF3_trimmed.tsb,white_non_hispanic,52,23.03909933263653,4,566,bi_implant_autologous,45to55,18.5to25,largerthan500,img752,,,,,
+783,18 months,20020,yes,yes,3D_783_18M_100614_UprightF4_TRIMMED_FILLED.tsb,white_hispanic,35,33.31496786042241,4,528,bi_autologous,35to45,30to35,largerthan500,img756,yes,,,yes,2022-07-05
+789,03 months,20584,yes,yes,3D_789_3M_072313_UpRightHH3_trimmed.tsb,white_non_hispanic,59,21.15556216537776,4,-101,uni_expander_ld,55to65,18.5to25,lessthen0,img767,,,,yes,2022-08-02
+794,18 months,20047,yes,yes,3D_794_18M_110514_uprightF4_TRIMMED.tsb,white_non_hispanic,36,18.063905325443788,4,439,bi_implant,35to45,lessthen18.5,400to500,img782,,,,,
+797,03 months,18653,yes,yes,3D_797_3M_070213_UpRightHH4_trimmed.tsb,americanindian_alaskan_non_hispanic,31,27.54391058208739,1,-346,uni_expander_ld,25to35,25to30,lessthen0,img787,,,,yes,2022-08-02
+809,18+ months,21533,yes,yes,3D_809_18M+_072815_UprightF3_TRIMMED.tsb,white_hispanic,41,33.20312499999999,4,810,uni_autologous_sym,35to45,30to35,largerthan500,img813,,,,,
+813,00 months - baseline,18859,yes,yes,3D_813_B_051013_uprightHH4_trimmed.tsb,white_hispanic,48,35.35403796938488,4,-179,bi_nobreast,45to55,35to40,lessthen0,img823,yes,,,yes,2022-08-02
+816,18+ months,20096,yes,yes,3D_816_18M+_012215_uprightF2_TRIMMED.tsb,white_hispanic,66,25.517751479289934,3,617,uni_autologous,largerthan65,25to30,largerthan500,img833,,,,,
+818,09 months,20989,yes,yes,3D_818_9M_040214_UprightF3_TRIMMED.tsb,white_non_hispanic,52,36.47007634191685,4,316,uni_autologous_sym,45to55,35to40,300to400,img837,,,,,
+830,00 months - baseline,18991,yes,yes,3D_830_B_061413_uprightHH3_trimmed.tsb,asian_non_hispanic,38,22.104293671330204,4,-494,bi_native,35to45,18.5to25,lessthen0,img857,,,,yes,2022-08-02
+831,12 months,20153,yes,yes,3D_831_12M_070714_UprightF4_trimmed.tsb,white_non_hispanic,53,30.37039693068952,3,384,uni_ld_sym,45to55,30to35,300to400,img859,,,,,
+841,06 months,19108,yes,yes,3D_841_6M_011414_UprightF2_trimmed.tsb,black_africanamerican_non_hispanic,49,26.54907159411664,4,62,uni_implant_autologous,45to55,25to30,0to100,img879,,,,yes,2022-08-02
+842,03 months,19115,yes,yes,3D_842_3M_102113_UprightHH1_trimmed.tsb,white_non_hispanic,57,26.673323883752648,4,97,uni_implant_ld_sym,55to65,25to30,0to100,img880,,,,,
+854,18+ months,21727,yes,yes,3D_854_18M+_100115_UprightF3_TRIMMED.tsb,black_africanamerican_non_hispanic,35,25.396571062329752,4,485,bi_implant_ld,35to45,25to30,400to500,img901,,,,,
+859,12 months,20240,yes,yes,3D_859_12M_100314_UprightF1_TRIMMED.tsb,black_africanamerican_non_hispanic,42,28.92164717192757,4,424,uni_nobreast,35to45,25to30,400to500,img915,,,,yes,2022-08-02
+868,09 months,20267,yes,yes,3D_868_9M_062714_UprightF1_trimmed.tsb,white_non_hispanic,41,18.320713899405085,4,296,bi_implant,35to45,lessthen18.5,200to300,img935,,,,,
+874,09 months,20321,yes,yes,3D_874_9M_070314_UprightF4_trimmed_FILLED.tsb,white_non_hispanic,70,27.055150884495315,3,143,bi_implant_ld,largerthan65,25to30,100to200,img952,,,,,
+883,12 months,20387,yes,yes,3D_883_12M_092914_UprightF3_TRIMMED.tsb,white_non_hispanic,38,22.734375,4,370,uni_ld,35to45,18.5to25,300to400,img973,,,,,
+894,00 months - baseline,19795,yes,yes,3D_894_B_101813_uprightHH1_trimmed.tsb,white_non_hispanic,65,36.9204152249135,4,-4,uni_expander_sym,largerthan65,35to40,lessthen0,img996,,,,,
+895,18 months,21245,yes,yes,3D_895_18M_060815_UprightF4_TRIMMED.tsb,white_non_hispanic,53,20.568785751957485,4,593,uni_implant,45to55,18.5to25,largerthan500,img1000,,,,,
+897,00 months - baseline,19818,yes,yes,3D_897_B_103113_uprightHH2_trimmed_FILLED.tsb,white_non_hispanic,66,35.8905501524169,4,-1,uni_expander,largerthan65,35to40,lessthen0,img1001,yes,,,yes,2022-08-02
+906,18+ months,21804,yes,yes,3D_906_18M+_102615_UprightF3_TRIMMED.tsb,white_hispanic,41,28.560996389305856,4,600,bi_implant_ld,35to45,25to30,largerthan500,img1023,,,,yes,2022-08-02
+915,12 months,20630,yes,yes,3D_915_12M_123014_UprightF1_TRIMMED_FILLED.tsb,white_non_hispanic,32,40.93428880475933,1,389,bi_autologous,25to35,largerthan40,300to400,img1053,,,,,
+920,09 months,20665,yes,yes,3D_920_9M_102114_UprightF1_trimmed.tsb,white_non_hispanic,62,27.109375,4,312,uni_implant_ld_sym,55to65,25to30,300to400,img1067,,,,,
+933,00 months - baseline,20762,yes,yes,3D_933_B_012114_UprightF2_trimmed_FILLED.tsb,white_non_hispanic,40,37.37024221453288,4,361,uni_nobreast,35to45,35to40,300to400,img1102,,,,,
+935,18 months,21057,yes,yes,3D_935_18M_040915_UprightF4_TRIMMED.tsb,white_non_hispanic,32,26.97683872100221,4,311,uni_ld_sym,25to35,25to30,300to400,img1107,,,,,
+956,18 months,22315,yes,yes,3D_956_18M_011416_UprightF2_TRIMMED[1].tsb,white_non_hispanic,66,35.86999603646452,4,428,uni_autologous_sym,largerthan65,35to40,400to500,img1152,,,,,
+960,03 months,22509,yes,yes,3D_960_3M_080615_uprightF1_TRIMMED.tsb,white_non_hispanic,52,35.85610101883891,1,-158,bi_expander,45to55,35to40,lessthen0,img1155,,,,,
+803,00 months - baseline,18719,yes,yes,3D_803_B_042913_UpRightHH4_trimmed.tsb,white_non_hispanic,59,31.58058068108177,4,-471,uni_expander,55to65,30to35,lessthen0,,,,,yes,2022-08-02
+646,00 months - baseline,14829,yes,yes,3D_646_B_082312_UpRightHH3_Trim_FILLED.tsb,white_non_hispanic,60,32.34250062748754,4,-1,bi_expander,55to65,30to35,lessthen0,,,,,yes,2022-08-02
+760,00 months - baseline,18299,yes,yes,3D_760_B_022613_UpRightHH2_trimmed.tsb,white_non_hispanic,44,33.31350386674599,4,-2,uni_partialmast_norearrange,35to45,30to35,lessthen0,,,,,,
+579,09 months,16887,yes,yes,3D_579_9M_021313_UpRightHH4_Trimmed.tsb,white_non_hispanic,61,34.709025063645164,4,71,bi_implant,55to65,30to35,0to100,,,,,,

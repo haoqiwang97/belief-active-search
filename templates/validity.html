@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .left-half {
+        width: 50%;
+        float: left;
+        padding: 10px;
+    }
+
+    .right-half {
+        width: 50%;
+        float: left;
+        padding: 10px;
+    }
+
+    .centered-button {
+        text-align: center;
+        margin-top: 20px; /* Adjust margin as needed */
+    }
+</style>
+
+<h1>Validity form</h1>
+<div class="ui grid container">
+    <form action="/submit-validity" method="post" class="ui form">
+        <input type="hidden" name="selected_experiment" value="{{ request.query_params.selected_experiment }}">
+        <input type="hidden" name="round" value="{{ request.query_params.round }}">
+        <input type="hidden" name="closest_neighbor_img" value="{{ closest_neighbor_img }}">
+        <div class="fields">
+            <div class="left-half">
+                <img class="ui fluid image"
+                    src={{closest_neighbor_img}}
+                    style="width: 40%; display: block; margin: 0 auto;">
+            </div>
+            <div class="right-half">
+                <div class="field">
+                    <h3>1. Is this photograph similar to your expectation of reconstruction outcome? (Rate from 1 to 5, 1: very unsimilar, 2: Somewhat unsimilar, 3: Neither unsimilar or similar, 4: Somewhat similar, 5: very similar) <br>
+                    ¿Se asemeja esta fotografía a tu expectativa del resultado de la reconstrucción? (Califica del 1 al 5, 1: Muy diferente, 2: Algo diferente, 3: Ni diferente ni similar, 4: Algo similar, 5: Muy similar)</h3>
+                </div>
+                <div class="inline fields">
+                    <div class="inline fields">
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="1">
+                                <label>1</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="2">
+                                <label>2</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="3">
+                                <label>3</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="4">
+                                <label>4</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q1" value="5">
+                                <label>5</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <h3>2. If we show this photograph to your doctor, do you think your doctor will have a better understanding of your thought? <br>
+                        Si mostramos esta fotografía a tu médico, ¿crees que tu médico entenderá mejor tu pensamiento?</h3>
+                </div>
+                <div class="inline fields">
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="q2" value="Yes">
+                            <label>Yes</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="q2" value="No">
+                            <label>No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="ui container">
+            <div class="fields">
+                <div class="left-half">
+                    <div class="ui small images">
+                        <img src={{closest_neighbor_img}}
+                            style="width: 30%; display: inline-block; margin: 0 1%;" class="ui image">
+                        <img src={{closest_neighbor_img_prev}}
+                            style="width: 30%; display: inline-block; margin: 0 1%;" class="ui image">
+                    </div>
+                </div>
+                <div class="right-half">
+                    <div class="field">
+                        <h3>3. For the 2 images shown one the left, which better describe your expectation?</h3>
+                    </div>
+                    <div class="inline fields">
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q3" value="left">
+                                <label>Left</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="q3" value="right">
+                                <label>Right</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+        <div class="centered-button">
+            <!-- <button class="ui button" type="submit">Submit</button> -->
+            <input type="submit">
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<style>
+    /* Add your styles here */
+    #imageContainer {
+    margin-top: 20px;
+    }
+</style>
+
+<h1><a href="/experimentslist">Experiment Management</a>
+    <i class="angle double right icon"></i>
+</h1>
+
+<div class="ui three column grid">
+    <div class="column">
+      <label for="imageSelector1">Select a photo: </label>
+      <select id="imageSelector1" onchange="showImage('imageSelector1', 'selectedImage1')">
+        <!-- Options will be added dynamically using JavaScript -->
+      </select>
+      <p></p>
+      <div id="imageContainer1" class="imageContainer">
+        <img id="selectedImage1" class="ui fluid image" src="" style="width: 40%; display: block; margin: 0 auto;">
+      </div>
+    </div>
+
+    <div class="column">
+      <label for="imageSelector2">Select a photo:</label>
+      <select id="imageSelector2" onchange="showImage('imageSelector2', 'selectedImage2')">
+        <!-- Options will be added dynamically using JavaScript -->
+      </select>
+      <p></p>
+
+      <div id="imageContainer2" class="imageContainer">
+        <img id="selectedImage2" class="ui fluid image" src="" style="width: 40%; display: block; margin: 0 auto;">
+      </div>
+    </div>
+  </div>
+
+    <div class="ui three column grid">
+        <div class="column">
+            <h2>Trials</h2>
+            <img class="ui fluid image" src={{trial_plot}}>
+            <table class="ui striped table">
+                <thead>
+                    <tr>
+                        <th>Round</th>
+                        <th>Left</th>
+                        <th>Right</th>
+                        <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trial in trials %}
+                    <tr>
+                        <td>{{ trial.round }}</td>
+                        <td>{{ trial.img1_id }}</td>
+                        <td>{{ trial.img2_id }}</td>
+                        <td>{{ trial.select_id }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="column">
+            <h2>Validities</h2>
+            <img class="ui fluid image" src={{validity_plot}}>
+            <p></p>
+            <p>Q1: Is this photograph similar to your expectation of reconstruction outcome? (Rate from 1 to 5, 1: very unsimilar, 5: very similar)</p>
+            <p>Q2: If we show this photograph to your doctor, do you think your doctor will have a better understanding of your thought?</p>
+            <table class="ui striped table">
+                <thead>
+                    <tr>
+                        <th>Round</th>
+                        <th>Photo</th>
+                        <th>Q1</th>
+                        <th>Q2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for validity in validities %}
+                    <tr>
+                        <td>{{ validity.round }}</td>
+                        <td>{{ validity.top_rank_img }}</td>
+                        <td>{{ validity.score }}</td>
+                        <td>{{ validity.doctor_understand }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="column">
+            <h2>Predictions</h2>
+            <img class="ui fluid image" src={{prediction_plot}}>
+
+            <table class="ui table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Photo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for index in range(closest_neighbor_img_list|length) %}
+                    <tr>
+                        <td>{{ index + 1 }}</td>
+                        <td><img class="ui fluid image" src={{closest_neighbor_img_list[index]}} style="width: 50%; display: block; margin: 0 auto;"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+    // var imagePaths = {
+    //   1: "/img_database_2d/20297_3D_730_3M_082114_uprightF1_TRIMMED_clean_snapshot_noborder.png",
+    //   2: "/img_database_2d/18039_3D_733_18M_032614_UprightF3_TRIMMED_clean_snapshot_noborder.png",
+    //   // Add more entries as needed
+    // };
+    // Include the imagePaths passed from the backend
+    var imagePaths = {
+      {% for key, value in img_paths.items() %}
+        {{ key }}: "{{ value }}",
+      {% endfor %}
+    };
+
+    function populateDropdown(selectorId) {
+      var imageSelector = document.getElementById(selectorId);
+
+      // Add the initial empty option
+      var emptyOption = document.createElement("option");
+      emptyOption.value = "";
+      emptyOption.text = "None";
+      emptyOption.disabled = true;
+      emptyOption.selected = true;
+      imageSelector.add(emptyOption);
+
+      // Populate the dropdown with options using the imagePaths object
+      for (var key in imagePaths) {
+        if (imagePaths.hasOwnProperty(key)) {
+          var option = document.createElement("option");
+          option.value = key;
+          option.text = key;
+          imageSelector.add(option);
+        }
+      }
+    }
+
+    // Populate dropdowns for both columns
+    populateDropdown("imageSelector1");
+    populateDropdown("imageSelector2");
+
+    function showImage(selectorId, imageId) {
+      var selectedValue = document.getElementById(selectorId).value;
+      var image = document.getElementById(imageId);
+
+      // Set the image source based on the selected value from the imagePaths object
+      image.src = imagePaths[selectedValue];
+
+      // Show the image
+      image.style.display = "block";
+    }
+</script>
+
+{% endblock %}

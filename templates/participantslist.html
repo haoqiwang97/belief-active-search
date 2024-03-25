@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1><a href="/home">Home</a>
+    <i class="angle double right icon"></i>
+</h1>
+
+<h2>Participants in database</h2>
+<table class="ui striped table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Patient ID</th>
+            <th>Provider ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for participant in participants %}
+        <tr>
+            <td>{{ participant.id }}</td>
+            <td>{{ participant.type }}</td>
+            <td>{{ participant.patient_id }}</td>
+            <td>{{ participant.provider_id }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Create a new participant</h2>
+<form class="ui form" action="/submit-participant" method="POST">
+    <div class="ui two column grid">
+        <div class="column">
+            <h3>Patients in database</h3>
+            <table class="ui striped table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Number</th>
+                        <th>Language</th>
+                        <th>Select</th> <!-- Added Select column -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td>{{ patient.id }}</td>
+                        <td>{{ patient.number }}</td>
+                        <td>{{ patient.language }}</td>
+                        <td><input type="radio" name="selected_patient" value="{{ patient.id }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="column">
+            <h3>Providers in database</h3>
+            <table class="ui striped table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Number</th>
+                        <th>Name</th>
+                        <th>Select</th> <!-- Added Select column -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for provider in providers %}
+                    <tr>
+                        <td>{{ provider.id }}</td>
+                        <td>{{ provider.number }}</td>
+                        <td>{{ provider.name }}</td>
+                        <td><input type="radio" name="selected_provider" value="{{ provider.id }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="field" style="margin-top: 20px;">
+        <div class="two fields">
+            <div class="field">
+                <label>Type (the participant is provider or patient)</label>
+                <select class="ui fluid dropdown" name="type">
+                    <option value=""></option>
+                    <option value="provider">Provider</option>
+                    <option value="patient">Patient</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <input type="submit" value="Create participant">
+</form>
+
+{% endblock %}

@@ -1,0 +1,137 @@
+<html>
+
+<head>
+    <title>Trial</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+    <style>
+        .fluid.ui.button {
+            background-color: transparent !important;
+            /* Use !important to override any existing styles */
+            border: none;
+            /* Remove border if needed */
+        }
+
+        .sentences {
+            text-align: center;
+            /* Align the sentences to the center */
+        }
+
+        .buttons-outside-container {
+            position: fixed;
+            top: 1%;
+            right: 1%;
+        }
+
+        .buttons-outside-container .ui.button {
+            margin-bottom: 5px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ui grid container">
+        <div class="row">
+            <div class="column">
+                <!-- <h1 class="ui header">Which photograph is more similar to what you expect to look like after the next
+                    surgery or procedure? <span style="color: gray;">(Number of rounds done: {{ number_rounds }}, max 300)</span>
+                </h1> -->
+                <!-- <button id="toggleButton">Toggle Language</button> -->
+                <div id="content">
+                    <h1 class="ui header" id="headingEnglish">Which photograph is more similar to what you expect to look like after the next surgery or procedure? <span style="color: gray;">(Number of rounds done: {{ number_rounds }}, max 300)</span></h1>
+                    <h1 class="ui header" id="headingSpanish" style="display: none;">¿Qué fotografía se parece más a lo que esperas lucir después de la próxima cirugía o procedimiento? <span style="color: gray;">(Número de rondas realizadas: {{ number_rounds }}, máximo 300)</span></h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="column">
+                <form action="/submit-trial" method="post">
+                    <input type="hidden" name="selected_experiment"
+                        value="{{ request.query_params.selected_experiment }}">
+                    <div class="ui three column grid">
+                        <div class="column">
+                            <input type="hidden" name="img1" value="{{img1}}">
+                            <button class="fluid ui button" type="submit" name="selected_image" value="img1left">
+                                <img class="ui fluid image" src={{img1}} alt="img1left">
+                            </button>
+                        </div>
+                        <div class="column">
+                            <input type="hidden" name="img2" value="{{img2}}">
+                            <button class="fluid ui button" type="submit" name="selected_image" value="img2right">
+                                <img class="ui fluid image" src={{img2}} alt="img2right" id="img2">
+                            </button>
+                        </div>
+                        <div class="column">
+                            <img class="ui fluid image" src={{pred}} alt="prediction">
+                            <div class="sentences">
+                                <p>Mean: {{mean}}</p>
+                                <p>Variation: {{cov}}</p>
+                                <p></p>
+                            </div>
+                            <div style="text-align: center;">
+                                <img class="ui fluid image" src="{{closest_neighbor_img}}" alt="closest" style="width: 50%; display: block; margin: 0 auto;">
+                            </div>
+                            <div class="sentences">
+                                <p>Approximated expectation</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="ui buttons">
+                <a href="/experimentslist" class="ui button">Back</a>
+            </div>
+            <div class="ui buttons">
+                <a class="ui red button" onclick="refreshPage()">Abstain</a>
+            </div>
+        </div>        
+    </div>
+
+
+    <div class="buttons-outside-container">
+        <button class="ui button" id="toggleButton">Language</button>
+        <!-- <a href="/experimentslist" class="ui button">History</a> -->
+    </div>
+    
+    <script>
+        // Check for stored language preference
+        const preferredLanguage = localStorage.getItem('languagePreference');
+
+        if (preferredLanguage === 'Spanish') {
+            document.getElementById('headingEnglish').style.display = 'none';
+            document.getElementById('headingSpanish').style.display = 'block';
+        }
+
+        // Toggle between languages
+        document.getElementById('toggleButton').addEventListener('click', function() {
+            var headingEnglish = document.getElementById('headingEnglish');
+            var headingSpanish = document.getElementById('headingSpanish');
+
+            if (headingEnglish.style.display === 'none') {
+                headingEnglish.style.display = 'block';
+                headingSpanish.style.display = 'none';
+                localStorage.setItem('languagePreference', 'English');
+            } else {
+                headingEnglish.style.display = 'none';
+                headingSpanish.style.display = 'block';
+                localStorage.setItem('languagePreference', 'Spanish');
+            }
+        });
+
+        // Function to update the number of rounds
+        function updateRounds(rounds) {
+            document.getElementById('numberRounds').innerText = rounds;
+            document.getElementById('numberRoundsSpanish').innerText = rounds;
+        }
+
+        function refreshPage() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
