@@ -39,7 +39,8 @@ Azure, deploy container and mount volume, first manually upload database file (c
 ```zsh
 # sign in BMIL
 # az login -u utbmil@gmail.com -p xx, I do not know the password
-az login # interactive login
+# interactive login
+az login
 
 ACI_PERS_RESOURCE_GROUP=beliefResourceGroup
 ACI_PERS_STORAGE_ACCOUNT_NAME=utbeliefstorageaccount
@@ -63,10 +64,10 @@ az acr show --name $ACR_NAME --query loginServer --output table
 # Tag container image
 acrLoginServer=utbmilbelief.azurecr.io
 # acrLoginServer=$(az acr show --name $ACR_NAME --query loginServer)
-docker tag belief $acrLoginServer/belief:v5
+docker tag belief $acrLoginServer/belief:v6
 
 # Push image to ACR (Azure Container Registry)
-docker push $acrLoginServer/belief:v5
+docker push $acrLoginServer/belief:v6
 
 # List images in Azure Container Registry
 az acr repository list --name $ACR_NAME --output table
@@ -116,12 +117,12 @@ az container create \
     --azure-file-volume-mount-path /app/database/ \
     --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
 
-# update container, note v1 -> v5
+# update container, note v1 -> v6
 # need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algorithm that needs less cpu
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v5 \
+    --image utbmilbelief.azurecr.io/belief:v6 \
     --dns-name-label utbmilbelief \
     --ports 80 \
     --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
