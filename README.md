@@ -19,6 +19,10 @@
 - `drop_db.py`, delete tables
 - `requirements.txt`, `pip freeze > requirements.txt `
 
+## Database
+https://dbdiagram.io/d/belief-study-4-650a07f502bd1c4a5ee2b32c
+A copy saved at https://utexas.app.box.com/file/1490506604634
+
 ## Commands
 Local test
 ```zsh
