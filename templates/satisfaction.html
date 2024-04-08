@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<style>
+    /* Add your styles here */
+    #imageContainer {
+    margin-top: 20px;
+    }
+
+    .ratings-form input[type="number"] {
+    margin-right: 20px; /* Adjust the right margin as needed */
+}
+</style>
+
+<h1><a href="/experimentslist">Experiment Management</a>
+    <i class="angle double right icon"></i>
+</h1>
+
+<div class="ui grid container">
+
+    <div class="column">
+        <h2>Here are our top 5 estimations of what you expect to look like</h2>
+    
+        <table class="ui table">
+            <thead>
+                <tr>
+                    {% for index in range(closest_neighbor_img_list|length) %}
+                    <th style="text-align: center;">{{ index + 1 }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for img_index in range(closest_neighbor_img_list|length) %}
+                    <td>
+                        <img class="ui fluid image" src={{closest_neighbor_img_list[img_index]}} style="width: 100%; display: block; margin: 0 auto;">
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Q1. Please rate your satisfaction with the photographs on a scale of 1 to 5 (1: very dissatisfied, 2: dissatisfied, 3: neither dissatisfied nor satisfied, 4: satisfied, 5: very satisfied)</p>
+        <form class="ratings-form">
+            <label for="rating1">1:</label>
+            <input type="number" id="rating1" name="rating1" min="1" max="5">
+            
+            <label for="rating2">2:</label>
+            <input type="number" id="rating2" name="rating2" min="1" max="5">
+            
+            <label for="rating3">3:</label>
+            <input type="number" id="rating3" name="rating3" min="1" max="5">
+            
+            <label for="rating4">4:</label>
+            <input type="number" id="rating4" name="rating4" min="1" max="5">
+            
+            <label for="rating5">5:</label>
+            <input type="number" id="rating5" name="rating5" min="1" max="5">
+        </form>
+
+        <p>Q2. If you're not completely satisfied, could you please provide specific feedback on what aspects of the images didn't meet your expectations?</p>
+        <div class="ui form">
+            <div class="field">
+              <textarea rows="4"></textarea>
+            </div>
+        </div>
+        <p></p>
+        <p>Q3. Would you like to discuss any of the photographs with your doctor?</p>
+        <div class="ui form">
+            <div class="field">
+              <textarea rows="4"></textarea>
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
+
+{% endblock %}

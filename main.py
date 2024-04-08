@@ -668,8 +668,8 @@ async def submit_trial(selected_image: str = Form(...), img1: str = Form(...), i
 
     connection.commit()
 
-    if round > 10 and round % 3 == 0: # todo: if not done this, go to validity form and then go to trial
-        return RedirectResponse(url=f"/validity?selected_experiment={selected_experiment}&round={round}", status_code=303) # give experiment id, round
+    # if round > 10 and round % 3 == 0: # todo: if not done this, go to validity form and then go to trial
+    #     return RedirectResponse(url=f"/validity?selected_experiment={selected_experiment}&round={round}", status_code=303) # give experiment id, round
     # current approximation and previous approximation
 
     # if done the above, go to next trial
@@ -793,6 +793,74 @@ def result(request: Request, selected_experiment: int = Query(...)):
                                        'img_paths': img_paths,})
 
 
+@app.get("/satisfaction")
+def satisfaction(request: Request, selected_experiment: int = Query(...)):
+    # prepare
+    experiment_id = selected_experiment
+    db = Database(experiment_id=selected_experiment)
+    plt.switch_backend('Agg')
+
+    trials = read_db_by_experiment("trials", experiment_id)
+    validities = read_db_by_experiment("validities", experiment_id)
+
+    # trial plot
+    # read trial
+    mean = np.concatenate(db.mu_W_list).reshape(-1, 2)
+    fig, ax = plt.subplots()
+    embedding = db.embedding
+    ax.scatter(embedding[:, 0], embedding[:, 1], s=25, c='black', alpha=0.5)
+    ax.quiver(mean[:-1, 0], mean[:-1, 1], mean[1:, 0]-mean[:-1, 0], mean[1:, 1]-mean[:-1, 1], scale_units='xy', angles='xy', scale=1, width=.005, color='tab:red')
+    ax.set(xlim=(-0.6, 0.6), ylim=(-0.6, 0.6), aspect='equal')
+    fig.savefig('./temporary/trial_summary.png', dpi=300)
+
+    # validity plot
+    validities_pd = read_pd("validities").query('experiment_id == @experiment_id')
+    fig, ax = plt.subplots()
+    ax.plot(validities_pd['round'], validities_pd['score'])
+    ax.scatter(validities_pd['round'], validities_pd['score'], 
+               c=['tab:red' if value == 'Yes' else 'tab:blue' for value in list(validities_pd['doctor_understand'])], 
+               label='Doctor Understand', zorder=10)
+    # Adding legend manually
+    legend_dict = {'Yes': 'tab:red', 'No': 'tab:blue'}
+    ax.legend(title='Q2', loc='lower right', handles=[plt.Line2D([0], [0], marker='o', color=color, label=label, linestyle='None') for label, color in legend_dict.items()])
+    ax.set(ylim=(0, 6), xlabel='Round', ylabel='Q1')
+    fig.savefig('./temporary/validity_summary.png', dpi=300)
+
+    # prediction plot
+    be = BayesEstimate(db)
+    be.fit()
+    be.plot()
+
+    # neighbor
+    # db = Database(experiment_id=selected_experiment)
+    estimation = db.latest_estimate()  # maybe no need to do this? no, initialization still need?
+    distances = cdist([estimation['mean']], db.embedding)  # make 2d array
+    closest_neighbor_img_ids = distances.squeeze().argsort()[:5]
+    imgdb_pd = read_pd('imgdb')
+    closest_neighbor_img_list = ["/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item() for closest_neighbor_img_id in closest_neighbor_img_ids]
+    print(closest_neighbor_img_list)
+
+    # image list
+    # imgdb_pd = read_pd('imgdb')
+    img_paths = {}
+    for index ,row in imgdb_pd.iterrows():
+        img_paths[row['img_id']] = "/img_database_2d/" + row['img_name']
+
+    # load plots
+    timestamp = get_timestamp()
+    trial_plot = f"/temporary/trial_summary.png?timestamp={timestamp}"
+    validity_plot = f"/temporary/validity_summary.png?timestamp={timestamp}"
+    prediction_plot = f"/temporary/search.png?timestamp={timestamp}"
+
+    return templates.TemplateResponse("satisfaction.html", 
+                                      {"request": request, 
+                                       "trials": trials, 
+                                       "validities": validities,
+                                       "trial_plot": trial_plot,
+                                       "validity_plot": validity_plot,
+                                       "prediction_plot": prediction_plot,
+                                       "closest_neighbor_img_list": closest_neighbor_img_list,
+                                       'img_paths': img_paths,})
 # @app.get("/patients")
 # def patients(request: Request):
 #     connection = sqlite3.connect(config.DB_FILE)
