@@ -861,38 +861,39 @@ def satisfaction(request: Request, selected_experiment: int = Query(...)):
                                        "prediction_plot": prediction_plot,
                                        "closest_neighbor_img_list": closest_neighbor_img_list,
                                        'img_paths': img_paths,})
-# @app.get("/patients")
-# def patients(request: Request):
-#     connection = sqlite3.connect(config.DB_FILE)
-#     connection.row_factory = sqlite3.Row
 
-#     cursor = connection.cursor()
 
-#     cursor.execute("""
-#                    SELECT *
-#                    FROM patient
-#                    """)
-    
-#     patients = cursor.fetchall()
+from fastapi.middleware.wsgi import WSGIMiddleware
+from dash import Dash, dcc, html, Output, Input
+import plotly.express as px
 
-#     return templates.TemplateResponse("patients.html", {"request": request, "patients": patients})
+@app.get("/launch-dash")
+async def launch_dash():
+    return RedirectResponse(url="/dash", status_code=303)
 
-# @app.post("/submitform")
-# async def add_patient(number: int = Form(...), race: str = Form(...), ethnicity: str = Form(...), age: int = Form(...)):
-#     connection = sqlite3.connect(config.DB_FILE)
-#     cursor = connection.cursor()
+################################################################################
+# Create the Dash application, make sure to adjust requests_pathname_prefx
+df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder_unfiltered.csv')
 
-#     cursor.execute(
-#       """
-#       INSERT INTO patient (number, age, race, ethnicity) VALUES (?, ?, ?, ?);
-#       """, (number, age, race, ethnicity)
-#       )
-    
-#     connection.commit()
+app_dash = Dash(__name__, requests_pathname_prefix='/dash/')
+app_dash.layout = html.Div([
+    html.H1(children='Title of Dash App', style={'textAlign':'center'}),
+    dcc.Dropdown(df.country.unique(), 'Canada', id='dropdown-selection'),
+    dcc.Graph(id='graph-content')
+])
 
-#     logging.info(f"Insert number={number}, race={race}, ethnicity={ethnicity}, age={age}")
+@app_dash.callback(
+    Output('graph-content', 'figure'),
+    Input('dropdown-selection', 'value')
+)
 
-#     return RedirectResponse(url="/patients", status_code=303)
+def update_graph(value):
+    dff = df[df.country==value]
+    return px.line(dff, x='year', y='pop')
+################################################################################
+# Now mount you dash server into main fastapi application
+app.mount("/dash", WSGIMiddleware(app_dash.server))
+################################################################################
 
 
 if __name__ == "__main__":
