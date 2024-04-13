@@ -863,36 +863,190 @@ def satisfaction(request: Request, selected_experiment: int = Query(...)):
                                        'img_paths': img_paths,})
 
 
-from fastapi.middleware.wsgi import WSGIMiddleware
-from dash import Dash, dcc, html, Output, Input
-import plotly.express as px
-
-@app.get("/launch-dash")
-async def launch_dash():
-    return RedirectResponse(url="/dash", status_code=303)
-
 ################################################################################
 # Create the Dash application, make sure to adjust requests_pathname_prefx
-df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder_unfiltered.csv')
+def create_dash_app(embedding, mean, img_paths):
+    from dash import Dash, dcc, html, Input, Output, callback, no_update
+    import plotly.graph_objects as go
+    import pandas as pd
 
-app_dash = Dash(__name__, requests_pathname_prefix='/dash/')
-app_dash.layout = html.Div([
-    html.H1(children='Title of Dash App', style={'textAlign':'center'}),
-    dcc.Dropdown(df.country.unique(), 'Canada', id='dropdown-selection'),
-    dcc.Graph(id='graph-content')
-])
+    import io
+    import base64
+    from PIL import Image
 
-@app_dash.callback(
-    Output('graph-content', 'figure'),
-    Input('dropdown-selection', 'value')
-)
 
-def update_graph(value):
-    dff = df[df.country==value]
-    return px.line(dff, x='year', y='pop')
+    fig = go.Figure(data=[
+        go.Scatter(
+            x=embedding[:, 0],
+            y=embedding[:, 1],
+            mode="markers",
+            marker=dict(
+                color='gray',
+                opacity=0.8,
+            ),
+            hoverinfo="none",
+            hovertemplate=None,
+            showlegend=False  # Disable legend for scatter plot
+        )
+    ])
+
+    arrow_data = []
+    x_end, y_end = 0, 0
+    for i in range(len(mean)):
+        x_start, y_start = x_end, y_end
+        x_end = mean[i, 0]
+        y_end = mean[i, 1]
+        arrow_data.append({'ID': f'Round {i+1}', 'X_Start': x_start, 'Y_Start': y_start, 'X_End': x_end, 'Y_End': y_end})
+
+    arrows_df = pd.DataFrame(arrow_data)
+
+    for _, arrow in arrows_df.iterrows():
+        fig.add_trace(go.Scatter(
+            x=[arrow['X_Start'], arrow['X_End']],
+            y=[arrow['Y_Start'], arrow['Y_End']],
+            mode='lines+markers',
+            line=dict(color='red', width=1),
+            marker=dict(symbol='arrow', size=5, angleref='previous'),
+            showlegend=False,  # Disable legend for arrows
+            name=arrow['ID']
+        ))
+
+    fig.update_layout(
+        width=500,
+        height=500,
+        plot_bgcolor='rgba(255,255,255,0.1)'
+    )
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1,
+    )
+    fig.update_xaxes(showticklabels=False) # Hide x axis ticks 
+    fig.update_yaxes(showticklabels=False) # Hide y axis ticks
+
+    app_dash = Dash(__name__, requests_pathname_prefix='/dash/')
+
+    num_anchors = 5
+    step_size = len(arrows_df) // (num_anchors - 1)
+    anchor_points = [i * step_size + 1 for i in range(num_anchors)]
+    app_dash.layout = html.Div([
+        html.H1(children='Title of Dash App', style={'textAlign':'center'}),
+        dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True),
+        dcc.Tooltip(id="graph-tooltip"),
+        html.H4(children='Trajectory', style={'textAlign':'center'}),
+        dcc.RangeSlider(
+            id='arrow-range-slider',
+            min=1,
+            max=len(arrows_df),
+            step=1,
+            value=[1, len(arrows_df)],
+            marks={anchor: str(anchor) for anchor in anchor_points}
+        )
+    ])
+
+
+    @app_dash.callback(
+        [Output("graph-basic-2", "figure"),
+        Output("graph-tooltip", "show"),
+        Output("graph-tooltip", "bbox"),
+        Output("graph-tooltip", "children")],
+        [Input("arrow-range-slider", "value"),
+        Input("graph-basic-2", "hoverData")]
+    )
+
+
+    def update_figure_and_display_hover(value, hoverData):
+        start_id, end_id = value
+        filtered_arrows_df = arrows_df.iloc[start_id-1:end_id]
+
+        fig = go.Figure(data=[
+            go.Scatter(
+                x=embedding[:, 0],
+                y=embedding[:, 1],
+                mode="markers",
+                marker=dict(
+                    color='gray',
+                    opacity=0.8,
+                ),
+                hoverinfo="none",
+                hovertemplate=None,
+                showlegend=False  # Disable legend for scatter plot
+            )
+        ])
+        
+        for _, arrow in filtered_arrows_df.iterrows():
+            fig.add_trace(go.Scatter(
+                x=[arrow['X_Start'], arrow['X_End']],
+                y=[arrow['Y_Start'], arrow['Y_End']],
+                mode='lines+markers',
+                line=dict(color='red', width=1),
+                marker=dict(symbol='arrow', size=5, angleref='previous'),
+                showlegend=False,  # Disable legend for arrows
+                name=arrow['ID']
+            ))
+
+        fig.update_layout(
+            plot_bgcolor='rgba(255,255,255,0.1)',
+            xaxis_title=None, yaxis_title=None
+        )
+        fig.update_yaxes(
+            scaleanchor="x",
+            scaleratio=1,
+        )
+        fig.update_xaxes(showticklabels=False) # Hide x axis ticks 
+        fig.update_yaxes(showticklabels=False) # Hide y axis ticks
+        
+        if hoverData is None:
+            return fig, False, no_update, no_update
+
+        pt = hoverData["points"][0]
+        curve_number = pt["curveNumber"]
+        if curve_number == 0:
+            bbox = pt["bbox"]
+            num = pt["pointNumber"]
+
+            img_src = img_paths[num]
+            im = Image.open('.' + img_src)
+            im = im.convert('RGB')
+            # dump it to base64
+            buffer = io.BytesIO()
+            im.save(buffer, format="jpeg")
+            encoded_image = base64.b64encode(buffer.getvalue()).decode()
+            im_url = "data:image/jpeg;base64, " + encoded_image
+
+            children = [
+                html.Div([
+                    html.Img(src=im_url, style={"width": "100%"}),
+                    html.H2(f"{num}"),
+                ], style={'width': '200px', 'white-space': 'normal'})
+            ]
+            return fig, True, bbox, children
+        else:
+            return fig, False, no_update, no_update
+    return app_dash
+
+# app_dash = create_dash_app()
 ################################################################################
+from fastapi.middleware.wsgi import WSGIMiddleware
+
+
+@app.get("/launch-dash")
+async def launch_dash(request: Request, selected_experiment: int = Query(...)):
+    # prepare
+    db = Database(experiment_id=selected_experiment)
+    mean = np.concatenate(db.mu_W_list).reshape(-1, 2)
+    embedding = db.embedding
+    imgdb_pd = read_pd('imgdb')
+    img_paths = {}
+    for index ,row in imgdb_pd.iterrows():
+        img_paths[row['img_id']] = "/img_database_2d/" + row['img_name']
+    # print(img_paths)
+    app_dash = create_dash_app(embedding, mean, img_paths)
+    # Now mount you dash server into main fastapi application
+    app.mount("/dash", WSGIMiddleware(app_dash.server))
+    return RedirectResponse(url="/dash", status_code=303)
+
 # Now mount you dash server into main fastapi application
-app.mount("/dash", WSGIMiddleware(app_dash.server))
+# app.mount("/dash", WSGIMiddleware(app_dash.server))
 ################################################################################
 
 
