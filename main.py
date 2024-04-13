@@ -908,7 +908,8 @@ def create_dash_app(embedding, mean, img_paths):
             line=dict(color='red', width=1),
             marker=dict(symbol='arrow', size=5, angleref='previous'),
             showlegend=False,  # Disable legend for arrows
-            name=arrow['ID']
+            name=arrow['ID'],
+            hovertemplate=f"{arrow['ID']}"
         ))
 
     fig.update_layout(
@@ -929,7 +930,7 @@ def create_dash_app(embedding, mean, img_paths):
     step_size = len(arrows_df) // (num_anchors - 1)
     anchor_points = [i * step_size + 1 for i in range(num_anchors)]
     app_dash.layout = html.Div([
-        html.H1(children='Title of Dash App', style={'textAlign':'center'}),
+        html.H1(children='Interview', style={'textAlign':'center'}),
         dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True),
         dcc.Tooltip(id="graph-tooltip"),
         html.H4(children='Trajectory', style={'textAlign':'center'}),
@@ -942,7 +943,7 @@ def create_dash_app(embedding, mean, img_paths):
             marks={anchor: str(anchor) for anchor in anchor_points}
         )
     ])
-
+    # todo: add time
 
     @app_dash.callback(
         [Output("graph-basic-2", "figure"),
@@ -981,7 +982,8 @@ def create_dash_app(embedding, mean, img_paths):
                 line=dict(color='red', width=1),
                 marker=dict(symbol='arrow', size=5, angleref='previous'),
                 showlegend=False,  # Disable legend for arrows
-                name=arrow['ID']
+                name=arrow['ID'],
+                hovertemplate=f"{arrow['ID']}"
             ))
 
         fig.update_layout(
@@ -1016,7 +1018,7 @@ def create_dash_app(embedding, mean, img_paths):
             children = [
                 html.Div([
                     html.Img(src=im_url, style={"width": "100%"}),
-                    html.H2(f"{num}"),
+                    html.H4(f"{num}"),
                 ], style={'width': '200px', 'white-space': 'normal'})
             ]
             return fig, True, bbox, children
