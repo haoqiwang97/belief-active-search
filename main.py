@@ -886,7 +886,6 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
     import base64
     from PIL import Image
 
-
     fig = go.Figure(data=[
         go.Scatter(
             x=embedding[:, 0],
@@ -944,7 +943,6 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
     num_anchors = 5
     step_size = (len(arrows_df) - 1) // (num_anchors - 1)  # Adjust step size calculation
     anchor_points = [1] + [i * step_size + 1 for i in range(1, num_anchors - 1)] + [len(arrows_df)]  # Include first and last points
-    print(anchor_points)
     app_dash.layout = html.Div([
         html.H1(children='Interview', style={'textAlign':'center', 'fontFamily': 'sans-serif'}),
         dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True),
@@ -970,13 +968,11 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
         Output("graph-tooltip", "bbox"),
         Output("graph-tooltip", "children")],
         [Input("arrow-range-slider", "value"),
-        Input("graph-basic-2", "hoverData")]
+        Input("graph-basic-2", "clickData")]
     )
-
-
-    def update_figure_and_display_hover(value, hoverData):
+    def update_figure_and_display_hover(value, clickData):
         start_id, end_id = value
-        filtered_arrows_df = arrows_df.iloc[start_id-1:end_id]
+        filtered_arrows_df = arrows_df.iloc[start_id - 1:end_id]
 
         fig = go.Figure(data=[
             go.Scatter(
@@ -992,7 +988,7 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
                 showlegend=False  # Disable legend for scatter plot
             )
         ])
-        
+
         for _, arrow in filtered_arrows_df.iterrows():
             fig.add_trace(go.Scatter(
                 x=[arrow['X_Start'], arrow['X_End']],
@@ -1008,17 +1004,17 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
         fig.update_layout(
             plot_bgcolor='rgba(255,255,255,0.1)',
             xaxis_title=None, yaxis_title=None,
-            xaxis=dict(scaleanchor="y", scaleratio=1,),
-            yaxis=dict(scaleanchor="x",scaleratio=1,),
+            xaxis=dict(scaleanchor="y", scaleratio=1, ),
+            yaxis=dict(scaleanchor="x", scaleratio=1, ),
             # margin=dict(l=0, r=0, t=0, b=0),  # Optional: Adjust the margin
         )
-        fig.update_xaxes(showticklabels=False) # Hide x axis ticks 
-        fig.update_yaxes(showticklabels=False) # Hide y axis ticks
-        
-        if hoverData is None:
+        fig.update_xaxes(showticklabels=False)  # Hide x axis ticks
+        fig.update_yaxes(showticklabels=False)  # Hide y axis ticks
+
+        if clickData is None:
             return fig, False, no_update, no_update
 
-        pt = hoverData["points"][0]
+        pt = clickData["points"][0]
         curve_number = pt["curveNumber"]
         if curve_number == 0:
             bbox = pt["bbox"]
