@@ -53,6 +53,18 @@ def read_pd(table_name: str) -> pd.DataFrame:
     table_pd = pd.DataFrame(table_db, columns=column_names)
     return table_pd
 
+def read_pd_by_experiment(table_name: str, experiment_id: int) -> pd.DataFrame:
+    # read as pandas format
+    connection = sqlite3.connect(config.DB_FILE)
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT * FROM {table_name} WHERE experiment_id = {experiment_id}")
+    table_db = cursor.fetchall()
+
+    column_names = [description[0] for description in cursor.description]
+    table_pd = pd.DataFrame(table_db, columns=column_names)
+    return table_pd
+
 def random_select() -> Tuple[str, str]:
     df = read_pd('imgdb')
 
@@ -865,7 +877,7 @@ def satisfaction(request: Request, selected_experiment: int = Query(...)):
 
 ################################################################################
 # Create the Dash application, make sure to adjust requests_pathname_prefx
-def create_dash_app(embedding, mean, img_paths):
+def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
     from dash import Dash, dcc, html, Input, Output, callback, no_update
     import plotly.graph_objects as go
     import pandas as pd
@@ -899,6 +911,10 @@ def create_dash_app(embedding, mean, img_paths):
         arrow_data.append({'ID': f'Round {i+1}', 'X_Start': x_start, 'Y_Start': y_start, 'X_End': x_end, 'Y_End': y_end})
 
     arrows_df = pd.DataFrame(arrow_data)
+    trials_pd['timepoint'] = pd.to_datetime(trials_pd['timepoint'])
+    trials_pd['relative_time'] = (trials_pd['timepoint'] - trials_pd['timepoint'].iloc[0]).dt.total_seconds()
+    trials_pd['relative_time2'] = trials_pd['relative_time'].apply(lambda x: f"{int(x//60)}min{int(x%60)}s")
+    arrows_df['relative_time2'] = trials_pd['relative_time2']
 
     for _, arrow in arrows_df.iterrows():
         fig.add_trace(go.Scatter(
@@ -913,37 +929,40 @@ def create_dash_app(embedding, mean, img_paths):
         ))
 
     fig.update_layout(
-        width=500,
-        height=500,
-        plot_bgcolor='rgba(255,255,255,0.1)'
+        plot_bgcolor='rgba(255,255,255,0.1)',
+        xaxis_title=None, yaxis_title=None,
+        xaxis=dict(scaleanchor="y", scaleratio=1,),
+        yaxis=dict(scaleanchor="x",scaleratio=1,),
+        # margin=dict(l=0, r=0, t=0, b=0),  # Optional: Adjust the margin
     )
-    fig.update_yaxes(
-        scaleanchor="x",
-        scaleratio=1,
-    )
+
     fig.update_xaxes(showticklabels=False) # Hide x axis ticks 
     fig.update_yaxes(showticklabels=False) # Hide y axis ticks
 
-    app_dash = Dash(__name__, requests_pathname_prefix='/dash/')
+    app_dash = Dash(__name__, requests_pathname_prefix=dash_url+'/') # important to have / at the end
 
     num_anchors = 5
-    step_size = len(arrows_df) // (num_anchors - 1)
-    anchor_points = [i * step_size + 1 for i in range(num_anchors)]
+    step_size = (len(arrows_df) - 1) // (num_anchors - 1)  # Adjust step size calculation
+    anchor_points = [1] + [i * step_size + 1 for i in range(1, num_anchors - 1)] + [len(arrows_df)]  # Include first and last points
+    print(anchor_points)
     app_dash.layout = html.Div([
-        html.H1(children='Interview', style={'textAlign':'center'}),
+        html.H1(children='Interview', style={'textAlign':'center', 'fontFamily': 'sans-serif'}),
         dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True),
         dcc.Tooltip(id="graph-tooltip"),
-        html.H4(children='Trajectory', style={'textAlign':'center'}),
-        dcc.RangeSlider(
-            id='arrow-range-slider',
-            min=1,
-            max=len(arrows_df),
-            step=1,
-            value=[1, len(arrows_df)],
-            marks={anchor: str(anchor) for anchor in anchor_points}
-        )
+        html.H4(children='Trajectory', style={'textAlign':'center', 'fontFamily': 'sans-serif'}),
+        html.Div(
+            dcc.RangeSlider(
+                id='arrow-range-slider',
+                min=1,
+                max=len(arrows_df),
+                step=1,
+                value=[1, len(arrows_df)],
+                marks={anchor: f"Time={arrows_df.loc[anchor-1, 'relative_time2']}(Round={anchor})" for anchor in anchor_points}
+            ),
+            style={'width': '70%', 'margin': '0 auto', 'fontFamily': 'sans-serif'}
+        ),
+        # html.H4(children='Trial history', style={'textAlign':'center'}) # todo: add history
     ])
-    # todo: add time
 
     @app_dash.callback(
         [Output("graph-basic-2", "figure"),
@@ -988,11 +1007,10 @@ def create_dash_app(embedding, mean, img_paths):
 
         fig.update_layout(
             plot_bgcolor='rgba(255,255,255,0.1)',
-            xaxis_title=None, yaxis_title=None
-        )
-        fig.update_yaxes(
-            scaleanchor="x",
-            scaleratio=1,
+            xaxis_title=None, yaxis_title=None,
+            xaxis=dict(scaleanchor="y", scaleratio=1,),
+            yaxis=dict(scaleanchor="x",scaleratio=1,),
+            # margin=dict(l=0, r=0, t=0, b=0),  # Optional: Adjust the margin
         )
         fig.update_xaxes(showticklabels=False) # Hide x axis ticks 
         fig.update_yaxes(showticklabels=False) # Hide y axis ticks
@@ -1038,14 +1056,16 @@ async def launch_dash(request: Request, selected_experiment: int = Query(...)):
     mean = np.concatenate(db.mu_W_list).reshape(-1, 2)
     embedding = db.embedding
     imgdb_pd = read_pd('imgdb')
+    trials_pd = read_pd_by_experiment("trials", experiment_id=selected_experiment)
     img_paths = {}
     for index ,row in imgdb_pd.iterrows():
         img_paths[row['img_id']] = "/img_database_2d/" + row['img_name']
-    # print(img_paths)
-    app_dash = create_dash_app(embedding, mean, img_paths)
+    dash_url = f"/dash/{selected_experiment}"
+    app_dash = create_dash_app(dash_url, embedding, mean, img_paths, trials_pd)
+    # note: if run the same selected_experiment with updated data, it needs like 1 minute to update the old dash app
     # Now mount you dash server into main fastapi application
-    app.mount("/dash", WSGIMiddleware(app_dash.server))
-    return RedirectResponse(url="/dash", status_code=303)
+    app.mount(dash_url, WSGIMiddleware(app_dash.server))
+    return RedirectResponse(url=dash_url, status_code=303)
 
 # Now mount you dash server into main fastapi application
 # app.mount("/dash", WSGIMiddleware(app_dash.server))
