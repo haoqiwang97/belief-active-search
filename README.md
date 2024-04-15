@@ -26,12 +26,15 @@ A copy saved at https://utexas.app.box.com/file/1490506604634
 ## Commands
 Local test
 ```zsh
-pip list --format=freeze > requirements_pip.txt  
+pip list --format=freeze > requirements.txt
 
+conda activate stan_env
+# conda activate belief_active_search? No, use stan_env
 uvicorn main:app --reload
 
 docker build -t belief .
 docker run -dp 80:80 belief
+# open http://0.0.0.0:80
 
 # use volume
 docker volume create belief-db
@@ -55,7 +58,7 @@ ACI_PERS_SHARE_NAME=beliefshare
 # if not first time, skip this
 az group create --name $ACI_PERS_RESOURCE_GROUP --location $ACI_PERS_LOCATION
 
-# Create an Azure Container Registry
+# Create an Azure Container Registry (ACR)
 # previously I used ACR_NAME=bmilbelief, so bmilbelief.azurecr.io is already in use
 # if not first time, skip this
 ACR_NAME=utbmilbelief
@@ -68,10 +71,10 @@ az acr show --name $ACR_NAME --query loginServer --output table
 # Tag container image
 acrLoginServer=utbmilbelief.azurecr.io
 # acrLoginServer=$(az acr show --name $ACR_NAME --query loginServer)
-docker tag belief $acrLoginServer/belief:v6
+docker tag belief $acrLoginServer/belief:v8
 
 # Push image to ACR (Azure Container Registry)
-docker push $acrLoginServer/belief:v6
+docker push $acrLoginServer/belief:v8
 
 # List images in Azure Container Registry
 az acr repository list --name $ACR_NAME --output table
@@ -85,6 +88,7 @@ az storage account create \
     --sku Standard_LRS
 
 # Create the file share
+# if not first time, skip this
 az storage share create \
   --name $ACI_PERS_SHARE_NAME \
   --account-name $ACI_PERS_STORAGE_ACCOUNT_NAME
@@ -93,7 +97,7 @@ az storage share create \
 STORAGE_KEY=$(az storage account keys list --resource-group $ACI_PERS_RESOURCE_GROUP --account-name $ACI_PERS_STORAGE_ACCOUNT_NAME --query "[0].value" --output tsv)
 echo $STORAGE_KEY
 
-# Manually upload database file
+# Manually upload database file, depends on whether want to erase the database on cloud
 az storage file upload \
     --account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
     --share-name $ACI_PERS_SHARE_NAME \
@@ -109,6 +113,7 @@ CONTAINER_NAME=bmil-belief-app
 az acr credential show --name $ACR_NAME
 REGISTRY_PASSWORD=IlsbNa0DW8+XOGSwYZub9ETUjPOXKY7Asg3caYLw7D+ACRBj+a3B
 
+# first time
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $CONTAINER_NAME \
@@ -121,12 +126,12 @@ az container create \
     --azure-file-volume-mount-path /app/database/ \
     --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
 
-# update container, note v1 -> v6
+# update container, note v1 -> v8
 # need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algorithm that needs less cpu
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v6 \
+    --image utbmilbelief.azurecr.io/belief:v8 \
     --dns-name-label utbmilbelief \
     --ports 80 \
     --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
