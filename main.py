@@ -894,6 +894,7 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
             marker=dict(
                 color='gray',
                 opacity=0.8,
+                size=12
             ),
             hoverinfo="none",
             hovertemplate=None,
@@ -912,7 +913,7 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
     arrows_df = pd.DataFrame(arrow_data)
     trials_pd['timepoint'] = pd.to_datetime(trials_pd['timepoint'])
     trials_pd['relative_time'] = (trials_pd['timepoint'] - trials_pd['timepoint'].iloc[0]).dt.total_seconds()
-    trials_pd['relative_time2'] = trials_pd['relative_time'].apply(lambda x: f"{int(x//60)}min{int(x%60)}s")
+    trials_pd['relative_time2'] = trials_pd['relative_time'].apply(lambda x: f"{int(x//60)}m") #{int(x%60)}s
     arrows_df['relative_time2'] = trials_pd['relative_time2']
 
     for _, arrow in arrows_df.iterrows():
@@ -928,11 +929,12 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
         ))
 
     fig.update_layout(
+        width=800, height=800,
         plot_bgcolor='rgba(255,255,255,0.1)',
         xaxis_title=None, yaxis_title=None,
         xaxis=dict(scaleanchor="y", scaleratio=1,),
         yaxis=dict(scaleanchor="x",scaleratio=1,),
-        # margin=dict(l=0, r=0, t=0, b=0),  # Optional: Adjust the margin
+        margin=dict(l=0, r=0, t=0, b=0),  # Optional: Adjust the margin
     )
 
     fig.update_xaxes(showticklabels=False) # Hide x axis ticks 
@@ -945,9 +947,9 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
     anchor_points = [1] + [i * step_size + 1 for i in range(1, num_anchors - 1)] + [len(arrows_df)]  # Include first and last points
     app_dash.layout = html.Div([
         html.H1(children='Interview', style={'textAlign':'center', 'fontFamily': 'sans-serif'}),
-        dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True),
+        html.Div(dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True)),
         dcc.Tooltip(id="graph-tooltip"),
-        html.H4(children='Trajectory', style={'textAlign':'center', 'fontFamily': 'sans-serif'}),
+        html.H2(children='Trajectory', style={'textAlign':'center', 'fontFamily': 'sans-serif'}),
         html.Div(
             dcc.RangeSlider(
                 id='arrow-range-slider',
@@ -955,9 +957,9 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
                 max=len(arrows_df),
                 step=1,
                 value=[1, len(arrows_df)],
-                marks={anchor: f"Time={arrows_df.loc[anchor-1, 'relative_time2']}(Round={anchor})" for anchor in anchor_points}
+                marks={anchor: {'label': f"Time={arrows_df.loc[anchor-1, 'relative_time2']}(Round={anchor})", 'style': {'font-size': '18px'}} for anchor in anchor_points}, 
             ),
-            style={'width': '70%', 'margin': '0 auto', 'fontFamily': 'sans-serif'}
+            style={'width': '80%', 'margin': '0 auto', 'fontFamily': 'sans-serif'}
         ),
         # html.H4(children='Trial history', style={'textAlign':'center'}) # todo: add history
     ])
@@ -982,6 +984,7 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
                 marker=dict(
                     color='gray',
                     opacity=0.8,
+                    size=12
                 ),
                 hoverinfo="none",
                 hovertemplate=None,
@@ -1002,11 +1005,12 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
             ))
 
         fig.update_layout(
+            width=800, height=800,
             plot_bgcolor='rgba(255,255,255,0.1)',
             xaxis_title=None, yaxis_title=None,
             xaxis=dict(scaleanchor="y", scaleratio=1, ),
             yaxis=dict(scaleanchor="x", scaleratio=1, ),
-            # margin=dict(l=0, r=0, t=0, b=0),  # Optional: Adjust the margin
+            margin=dict(l=0, r=0, t=0, b=0),  # Optional: Adjust the margin
         )
         fig.update_xaxes(showticklabels=False)  # Hide x axis ticks
         fig.update_yaxes(showticklabels=False)  # Hide y axis ticks
