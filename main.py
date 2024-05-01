@@ -992,6 +992,9 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
             )
         ])
 
+        marker_colors = ['gray'] * len(embedding)
+        marker_sizes = [12] * len(embedding)
+
         for _, arrow in filtered_arrows_df.iterrows():
             fig.add_trace(go.Scatter(
                 x=[arrow['X_Start'], arrow['X_End']],
@@ -1024,6 +1027,10 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
             bbox = pt["bbox"]
             num = pt["pointNumber"]
 
+            # Highlight clicked dot
+            marker_colors[num] = 'black'
+            marker_sizes[num] = 15
+
             img_src = img_paths[num]
             im = Image.open('.' + img_src)
             im = im.convert('RGB')
@@ -1039,6 +1046,7 @@ def create_dash_app(dash_url, embedding, mean, img_paths, trials_pd):
                     html.H4(f"{num}"),
                 ], style={'width': '200px', 'white-space': 'normal'})
             ]
+            fig.update_traces(marker=dict(color=marker_colors, size=marker_sizes), selector=dict(mode="markers"))
             return fig, True, bbox, children
         else:
             return fig, False, no_update, no_update
