@@ -618,10 +618,17 @@ def trial(request: Request, selected_experiment: int = Query(...)):
     # find path of image id
     closest_neighbor_img = "/img_database_2d/" + imgdb_pd.query('img_id == @closest_neighbor_img_id')['img_name'].item()
 
-
+    # when did the experiment start?
+    trials_pd = read_pd_by_experiment("trials", selected_experiment)
+    if len(trials_pd) != 0:
+        start_time = trials_pd['timepoint'].iloc[0]
+    else:
+        start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
     return templates.TemplateResponse("trial.html", {"request": request, "img1": img1, "img2": img2, "pred": pred, 
                                                      "closest_neighbor_img": closest_neighbor_img,
                                                      "number_rounds": db.number_rounds,
+                                                     "start_time": start_time,
                                                      "mean": np.around(db.mu_W, decimals=3), 
                                                      "cov": np.around(db.Wcov, decimals=3)})
 
