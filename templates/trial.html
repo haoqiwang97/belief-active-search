@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -34,13 +35,19 @@
     <div class="ui grid container">
         <div class="row">
             <div class="column">
+                <h1><a href="/experimentslist">Finish</a>
+                    <i class="angle double left icon"></i>
+                </h1>
+                <h2 id="timeElapsed"></h2> <!-- Display time elapsed here -->
                 <!-- <h1 class="ui header">Which photograph is more similar to what you expect to look like after the next
                     surgery or procedure? <span style="color: gray;">(Number of rounds done: {{ number_rounds }}, max 300)</span>
                 </h1> -->
                 <!-- <button id="toggleButton">Toggle Language</button> -->
                 <div id="content">
-                    <h1 class="ui header" id="headingEnglish">Which photograph is more similar to what you expect to look like after the next surgery or procedure? <span style="color: gray;">(Number of rounds done: {{ number_rounds }}, max 300)</span></h1>
-                    <h1 class="ui header" id="headingSpanish" style="display: none;">¿Qué fotografía se parece más a lo que esperas lucir después de la próxima cirugía o procedimiento? <span style="color: gray;">(Número de rondas realizadas: {{ number_rounds }}, máximo 300)</span></h1>
+                    <!-- <h1 class="ui header" id="headingEnglish">Which photograph is more similar to what you expect to look like after the next surgery or procedure? <span style="color: gray;">(Number of rounds done: {{ number_rounds }}, max 300)</span></h1> -->
+                    <h1 class="ui header" id="headingEnglish">Which photograph is more similar to what you expect to look like after the next surgery or procedure? <span style="color: gray;">(Number of rounds done: {{ number_rounds }})</span></h1>
+                    <!-- <h1 class="ui header" id="headingSpanish" style="display: none;">¿Qué fotografía se parece más a lo que esperas lucir después de la próxima cirugía o procedimiento? <span style="color: gray;">(Número de rondas realizadas: {{ number_rounds }}, máximo 300)</span></h1> -->
+                    <h1 class="ui header" id="headingSpanish" style="display: none;">¿Qué fotografía se parece más a lo que esperas lucir después de la próxima cirugía o procedimiento? <span style="color: gray;">(Número de rondas realizadas: {{ number_rounds }})</span></h1>
                 </div>
             </div>
         </div>
@@ -83,11 +90,11 @@
         </div>
 
         <div class="row">
+            <!-- <div class="ui buttons">
+                <a href="/experimentslist" class="ui button">Finish</a>
+            </div> -->
             <div class="ui buttons">
-                <a href="/experimentslist" class="ui button">Back</a>
-            </div>
-            <div class="ui buttons">
-                <a class="ui red button" onclick="refreshPage()">Abstain</a>
+                <a class="ui red button" onclick="refreshPage()">Skip</a>
             </div>
         </div>        
     </div>
@@ -99,6 +106,23 @@
     </div>
     
     <script>
+        // Display current date and time
+        // Display current date and time
+        function displayDateTime() {
+            var currentDate = new Date();
+            var oldTime = new Date("{{ start_time }}");
+            var difference = currentDate.getTime() - oldTime.getTime();
+            var secondsDifference = Math.floor(difference / 1000);
+            var minutes = Math.floor(secondsDifference / 60);
+            var seconds = secondsDifference % 60;
+            var timeDifference = minutes + " minutes, " + seconds + " seconds";
+            document.getElementById('timeElapsed').innerText = "Time Elapsed: " + timeDifference + " (at most 15 minutes)";
+        }
+
+
+        // Update the time elapsed every second
+        setInterval(displayDateTime, 1000);
+
         // Check for stored language preference
         const preferredLanguage = localStorage.getItem('languagePreference');
 
@@ -132,6 +156,9 @@
         function refreshPage() {
             location.reload();
         }
+
+        // Initial call to displayDateTime function
+        displayDateTime();
     </script>
 </body>
 </html>
