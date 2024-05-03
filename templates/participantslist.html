@@ -35,19 +35,19 @@
             <table class="ui striped table">
                 <thead>
                     <tr>
+                        <th>Select</th> <!-- Added Select column -->
                         <th>ID</th>
                         <th>Number</th>
                         <th>Language</th>
-                        <th>Select</th> <!-- Added Select column -->
                     </tr>
                 </thead>
                 <tbody>
                     {% for patient in patients %}
                     <tr>
+                        <td><input type="radio" name="selected_patient" value="{{ patient.id }}"></td>
                         <td>{{ patient.id }}</td>
                         <td>{{ patient.number }}</td>
                         <td>{{ patient.language }}</td>
-                        <td><input type="radio" name="selected_patient" value="{{ patient.id }}"></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -59,19 +59,19 @@
             <table class="ui striped table">
                 <thead>
                     <tr>
+                        <th>Select</th> <!-- Added Select column -->
                         <th>ID</th>
                         <th>Number</th>
                         <th>Name</th>
-                        <th>Select</th> <!-- Added Select column -->
                     </tr>
                 </thead>
                 <tbody>
                     {% for provider in providers %}
                     <tr>
+                        <td><input type="radio" name="selected_provider" value="{{ provider.id }}"></td>
                         <td>{{ provider.id }}</td>
                         <td>{{ provider.number }}</td>
                         <td>{{ provider.name }}</td>
-                        <td><input type="radio" name="selected_provider" value="{{ provider.id }}"></td>
                     </tr>
                     {% endfor %}
                 </tbody>

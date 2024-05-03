@@ -10,25 +10,25 @@
     <table class="ui striped table">
         <thead>
             <tr>
+                <th>Select</th>
                 <th>ID</th>
                 <th>Visit ID</th>
                 <th>Parameter ID</th>
                 <th>Number of rounds</th>
-                <th>Select</th>
             </tr>
         </thead>
         <tbody>
             {% for experiment in experiments %}
             <tr>
+                <td>
+                    <input type="radio" name="selected_experiment" value="{{ experiment.id }}">
+                    <!-- <input type="hidden" name="round_count" value="{{ experiment.round_count }}"> -->
+                </td>
                 <td>{{ experiment.id }}</td>
                 <td>{{ experiment.visit_id }}</td>
                 <td>{{ experiment.parameter_id }}</td>
                 <!-- <td>{{ experiment.round_count }}</td> -->
                 <td>{{ number_rounds_list[loop.index0] }}</td>
-                <td>
-                    <input type="radio" name="selected_experiment" value="{{ experiment.id }}">
-                    <!-- <input type="hidden" name="round_count" value="{{ experiment.round_count }}"> -->
-                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -69,21 +69,21 @@
     <table class="ui striped table">
         <thead>
             <tr>
+                <th>Select</th>
                 <th>ID</th>
                 <th>Participant ID</th>
                 <th>Date</th>
                 <th>Next procedure</th>
-                <th>Select</th>
             </tr>
         </thead>
         <tbody>
             {% for visit in visits %}
             <tr>
+                <td><input type="radio" name="selected_visit" value="{{ visit.id }}"></td>
                 <td>{{ visit.id }}</td>
                 <td>{{ visit.participant_id }}</td>
                 <td>{{ visit.date }}</td>
                 <td>{{ visit.next_procedure }}</td>
-                <td><input type="radio" name="selected_visit" value="{{ visit.id }}"></td>
             </tr>
             {% endfor %}
         </tbody>

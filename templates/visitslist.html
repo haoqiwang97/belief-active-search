@@ -33,21 +33,21 @@
     <table class="ui striped table">
         <thead>
             <tr>
+                <th>Select</th>
                 <th>ID</th>
                 <th>Type</th>
                 <th>Patient ID</th>
                 <th>Provider ID</th>
-                <th>Select</th>
             </tr>
         </thead>
         <tbody>
             {% for participant in participants %}
             <tr>
+                <td><input type="radio" name="selected_participant" value="{{ participant.id }}"></td>
                 <td>{{ participant.id }}</td>
                 <td>{{ participant.type }}</td>
                 <td>{{ participant.patient_id }}</td>
                 <td>{{ participant.provider_id }}</td>
-                <td><input type="radio" name="selected_participant" value="{{ participant.id }}"></td>
             </tr>
             {% endfor %}
         </tbody>
