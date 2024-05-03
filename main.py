@@ -895,9 +895,9 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
     from PIL import Image
 
 
-    fig = make_subplots(rows=1, cols=2, column_widths=[0.5, 0.5])
+    fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5], vertical_spacing=0.2)
 
-    # left
+    # up
     fig.add_trace(
         go.Scatter(x=embedding[:, 0], y=embedding[:, 1], mode="markers",
                    marker=dict(color='gray', opacity=0.8, size=12), hoverinfo="none", hovertemplate=None,
@@ -929,10 +929,10 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
             row=1, col=1
         )
 
-    # right
-    screen_width = 1600
-    screen_height = 900
-    scale_factor = 0.4
+    # down
+    screen_width = 1366
+    screen_height = 1024
+    scale_factor = 0.6
 
     fig.add_trace(
         go.Scatter(
@@ -942,35 +942,35 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
             marker_opacity=0,
             showlegend=False,
         ),
-        row=1, col=2
+        row=2, col=1
     )
 
     # Configure axes
     fig.update_xaxes(
         visible=False,
         range=[0, screen_width * scale_factor],
-        row=1, col=2
+        row=2, col=1
     )
 
     fig.update_yaxes(
         visible=False,
         range=[0, screen_height * scale_factor],
-        row=1, col=2
+        row=2, col=1
     )
 
-    fig.add_annotation(
-        text="Click a point to view",
-        xref="paper",
-        yref="paper",
-        x=screen_width * scale_factor * 0.5,
-        y=screen_height * scale_factor * 0.5,
-        font=dict(size=14, color="black"),
-        showarrow=False,
-        row=1,
-        col=2
-    )
+    # fig.add_annotation(
+    #     text="Click a point to view",
+    #     xref="paper",
+    #     yref="paper",
+    #     x=screen_width * scale_factor * 0.5,
+    #     y=screen_height * scale_factor * 0.5,
+    #     font=dict(size=14, color="black"),
+    #     showarrow=False,
+    #     row=1,
+    #     col=2
+    # )
 
-    fig.update_layout(width=screen_width * scale_factor * 2, height=screen_height * scale_factor, 
+    fig.update_layout(width=screen_width * scale_factor, height=screen_height * scale_factor * 2, 
                       plot_bgcolor='rgba(255,255,255,0.1)', xaxis_title=None, yaxis_title=None,
                       margin=dict(l=0, r=0, t=0, b=0),
                       xaxis=dict(scaleanchor="y", scaleratio=1)
@@ -986,9 +986,6 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
 
     app_dash.layout = html.Div([
         html.H1(children='Interview', style={'textAlign': 'center', 'fontFamily': 'sans-serif'}),
-        html.Div(className='container', children=[
-            dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True),
-        ]),
         html.H2(children='Trajectory', style={'textAlign': 'center', 'fontFamily': 'sans-serif'}),
         html.Div(
             dcc.RangeSlider(
@@ -1002,7 +999,12 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
             ),
             style={'width': '80%', 'margin': '0 auto', 'fontFamily': 'sans-serif'}
         ),
-    ], style={'width': '100%', 'height': '100vh'})
+        html.H1(children=''),
+        html.H1(children=''),
+        html.Div(className='container', children=[dcc.Graph(id="graph-basic-2", figure=fig, clear_on_unhover=True),
+        ]),
+    ], style={'width': '100%', 'height': '100vh'}
+    )
 
     @app_dash.callback(
         Output("graph-basic-2", "figure"),
@@ -1010,53 +1012,96 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
          Input("graph-basic-2", "clickData")]
     )
     def display_image(value, clickData):
-        if clickData is None:
-            return fig
+        fig_clicked = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5], vertical_spacing=0.2)#, column_widths=[0.5, 0.5]
+        screen_width = 1366
+        screen_height = 1024
+        scale_factor = 0.6
 
-        pt = clickData["points"][0]
-        curve_number = pt["curveNumber"]
-        if curve_number == 0:
-            fig_clicked = make_subplots(rows=1, cols=2, column_widths=[0.5, 0.5])
+        # up
+        fig_clicked.add_trace(
+            go.Scatter(x=embedding[:, 0], y=embedding[:, 1], mode="markers",
+                    marker=dict(color='gray', opacity=0.8, size=12), hoverinfo="none", hovertemplate=None,
+                    showlegend=False),
+            row=1, col=1
+        )
 
-            # left
+        arrow_data = []
+        x_end, y_end = 0, 0
+        for i in range(len(mean)):
+            x_start, y_start = x_end, y_end
+            x_end = mean[i, 0]
+            y_end = mean[i, 1]
+            arrow_data.append({'ID': f'Round {i + 1}', 'X_Start': x_start, 'Y_Start': y_start, 'X_End': x_end,
+                            'Y_End': y_end})
+
+        arrows_df = pd.DataFrame(arrow_data)
+        trials_pd['timepoint'] = pd.to_datetime(trials_pd['timepoint'])
+        trials_pd['relative_time'] = (trials_pd['timepoint'] - trials_pd['timepoint'].iloc[0]).dt.total_seconds()
+        trials_pd['relative_time2'] = trials_pd['relative_time'].apply(lambda x: f"{int(x // 60)}m")  # {int(x%60)}s
+        arrows_df['relative_time2'] = trials_pd['relative_time2']
+
+        # filter trajectories
+        start_id, end_id = value
+        filtered_arrows_df = arrows_df.iloc[start_id - 1:end_id]
+        for _, arrow in filtered_arrows_df.iterrows():
             fig_clicked.add_trace(
-                go.Scatter(x=embedding[:, 0], y=embedding[:, 1], mode="markers",
-                        marker=dict(color='gray', opacity=0.8, size=12), hoverinfo="none", hovertemplate=None,
-                        showlegend=False),
+                go.Scatter(x=[arrow['X_Start'], arrow['X_End']], y=[arrow['Y_Start'], arrow['Y_End']],
+                        mode='lines+markers', line=dict(color='red', width=1),
+                        marker=dict(symbol='arrow', size=5, angleref='previous'),
+                        showlegend=False, name=arrow['ID'], hovertemplate=f"{arrow['ID']}"),
                 row=1, col=1
             )
 
-            arrow_data = []
-            x_end, y_end = 0, 0
-            for i in range(len(mean)):
-                x_start, y_start = x_end, y_end
-                x_end = mean[i, 0]
-                y_end = mean[i, 1]
-                arrow_data.append({'ID': f'Round {i + 1}', 'X_Start': x_start, 'Y_Start': y_start, 'X_End': x_end,
-                                'Y_End': y_end})
+        fig_clicked.update_layout(width=screen_width * scale_factor, height=screen_height * scale_factor * 2, 
+                        plot_bgcolor='rgba(255,255,255,0.1)', xaxis_title=None, yaxis_title=None,
+                        margin=dict(l=0, r=0, t=0, b=0),
+                        xaxis=dict(scaleanchor="y", scaleratio=1)
+                        )
+        fig_clicked.update_xaxes(showticklabels=False)  # Hide x axis ticks
+        fig_clicked.update_yaxes(showticklabels=False)  # Hide y axis ticks
 
-            arrows_df = pd.DataFrame(arrow_data)
-            trials_pd['timepoint'] = pd.to_datetime(trials_pd['timepoint'])
-            trials_pd['relative_time'] = (trials_pd['timepoint'] - trials_pd['timepoint'].iloc[0]).dt.total_seconds()
-            trials_pd['relative_time2'] = trials_pd['relative_time'].apply(lambda x: f"{int(x // 60)}m")  # {int(x%60)}s
-            arrows_df['relative_time2'] = trials_pd['relative_time2']
+        # add start
+        # fig_clicked.add_trace(
+        #     go.Scatter(x=[0], y=[0], 
+        #             mode='markers',
+        #             marker=dict(size=[10], color='red', symbol='circle-open'),
+        #             hoverinfo='none',
+        #             showlegend=False,
+        #             ), 
+        #             row=1, col=1)
+        fig_clicked.add_annotation(
+            text='S',
+            xref="paper",
+            yref="paper",
+            x=filtered_arrows_df.iloc[0]['X_Start'],
+            y=filtered_arrows_df.iloc[0]['Y_Start'],
+            font=dict(size=14, color="red"),
+            align = "left",
+            showarrow=False,
+            row=1,
+            col=1
+        )
+        fig_clicked.add_annotation(
+            text='E',
+            xref="paper",
+            yref="paper",
+            x=filtered_arrows_df.iloc[-1]['X_End'],
+            y=filtered_arrows_df.iloc[-1]['Y_End'],
+            font=dict(size=14, color="red"),
+            align = "left",
+            showarrow=False,
+            row=1,
+            col=1
+        )
 
-            start_id, end_id = value
-            filtered_arrows_df = arrows_df.iloc[start_id - 1:end_id]
-            for _, arrow in filtered_arrows_df.iterrows():
-                fig_clicked.add_trace(
-                    go.Scatter(x=[arrow['X_Start'], arrow['X_End']], y=[arrow['Y_Start'], arrow['Y_End']],
-                            mode='lines+markers', line=dict(color='red', width=1),
-                            marker=dict(symbol='arrow', size=5, angleref='previous'),
-                            showlegend=False, name=arrow['ID'], hovertemplate=f"{arrow['ID']}"),
-                    row=1, col=1
-                )
+        if clickData is None:
+            return fig_clicked
 
-            # right
-            screen_width = 1600
-            screen_height = 900
-            scale_factor = 0.4
-            
+        pt = clickData["points"][0]
+        curve_number = pt["curveNumber"]
+
+        if curve_number == 0:
+            # down
             num = pt["pointNumber"]
             
             # highlight
@@ -1071,13 +1116,6 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
             for index ,row in imgdb_pd.iterrows():
                 img_paths[row['img_id']] = "/img_database_2d/" + row['img_name']
             img_row = imgdb_pd.query('img_id == @num')
-            # print(img_row.columns)
-            annotation_text = (f'img id: {img_row["img_id"].values[0]}<br>'
-                               f'race: {img_row["new_race"].values[0]}<br>'
-                               f'age: {img_row["age"].values[0]}<br>'
-                               f'bmi: {img_row["bmi"].values[0]:.1f}<br>'
-                               f'days: {img_row["days_since_recon"].values[0]}<br>'
-                               f'{img_row["breast_state"].values[0]}<br>')
 
             img_src = img_paths[num]
             im = Image.open('.' + img_src)
@@ -1096,20 +1134,20 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
                     marker_opacity=0,
                     showlegend=False,
                 ),
-                row=1, col=2
+                row=2, col=1
             )
 
             # Configure axes
             fig_clicked.update_xaxes(
                 visible=False,
-                range=[0, im_width],
-                row=1, col=2
+                range=[-im_width/4, im_width], # todo: understand why
+                row=2, col=1
             )
 
             fig_clicked.update_yaxes(
                 visible=False,
                 range=[0, im_height],
-                row=1, col=2
+                row=2, col=1
             )
 
             fig_clicked.add_layout_image(
@@ -1123,29 +1161,27 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
                     opacity=1.0,
                     layer="below",
                     source=im_url),
-                row=1, col=2
+                row=2, col=1
             )
 
-            fig_clicked.add_annotation(
-                text=annotation_text,
-                xref="paper",
-                yref="paper",
-                x=im_width * 0.8,
-                y=im_height * 0.8,
-                font=dict(size=14, color="black"),
-                align = "left",
-                showarrow=False,
-                row=1,
-                col=2
-            )
-
-            fig_clicked.update_layout(width=screen_width * scale_factor * 2, height=screen_height * scale_factor, 
-                            plot_bgcolor='rgba(255,255,255,0.1)', xaxis_title=None, yaxis_title=None,
-                            margin=dict(l=0, r=0, t=0, b=0),
-                            xaxis=dict(scaleanchor="y", scaleratio=1)
-                            )
-            fig_clicked.update_xaxes(showticklabels=False)  # Hide x axis ticks
-            fig_clicked.update_yaxes(showticklabels=False)  # Hide y axis ticks
+            # annotation_text = (f'img id: {img_row["img_id"].values[0]}<br>'
+            #                    f'race: {img_row["new_race"].values[0]}<br>'
+            #                    f'age: {img_row["age"].values[0]}<br>'
+            #                    f'bmi: {img_row["bmi"].values[0]:.1f}<br>'
+            #                    f'days: {img_row["days_since_recon"].values[0]}<br>'
+            #                    f'{img_row["breast_state"].values[0]}<br>')
+            # fig_clicked.add_annotation(
+            #     text=annotation_text,
+            #     xref="paper",
+            #     yref="paper",
+            #     x=im_width * 0.8,
+            #     y=im_height * 0.8,
+            #     font=dict(size=14, color="black"),
+            #     align = "left",
+            #     showarrow=False,
+            #     row=1,
+            #     col=2
+            # )
 
             return fig_clicked
 
