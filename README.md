@@ -71,10 +71,10 @@ az acr show --name $ACR_NAME --query loginServer --output table
 # Tag container image
 acrLoginServer=utbmilbelief.azurecr.io
 # acrLoginServer=$(az acr show --name $ACR_NAME --query loginServer)
-docker tag belief $acrLoginServer/belief:v10
+docker tag belief $acrLoginServer/belief:v11
 
 # Push image to ACR (Azure Container Registry)
-docker push $acrLoginServer/belief:v10
+docker push $acrLoginServer/belief:v11
 
 # List images in Azure Container Registry
 az acr repository list --name $ACR_NAME --output table
@@ -110,6 +110,7 @@ CONTAINER_NAME=bmil-belief-app
 # remember to allow access key and update password
 # path, beliefResourceGroup>utbmilbelief
 # get password, #utbmilbelief 
+# az acr update -n utbmilbelief --admin-enabled true, 20240503
 az acr credential show --name $ACR_NAME
 REGISTRY_PASSWORD=IlsbNa0DW8+XOGSwYZub9ETUjPOXKY7Asg3caYLw7D+ACRBj+a3B
 
@@ -126,12 +127,12 @@ az container create \
     --azure-file-volume-mount-path /app/database/ \
     --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
 
-# update container, note v1 -> v10
+# update container, note v1 -> v11
 # need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algorithm that needs less cpu
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v10 \
+    --image utbmilbelief.azurecr.io/belief:v11 \
     --dns-name-label utbmilbelief \
     --ports 80 \
     --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
@@ -175,6 +176,82 @@ Difficulties
 - Use Azure cloud, store database
 - Rewrite backend algorithms
 - Compile pystan in container
+
+# Solve "not secure"
+2024-05-03
+https://learn.microsoft.com/en-us/azure/container-apps/get-started?tabs=bash
+
+```zsh
+az containerapp up \
+    --name my-container-app \
+    --resource-group my-container-apps \    
+    --location centralus \
+    --environment 'my-container-apps' \
+    --image mcr.microsoft.com/k8se/quickstart:latest \
+    --target-port 80 \
+    --ingress external \
+    --query properties.configuration.ingress.fqdn
+
+az containerapp env storage set \
+    --name my-container-app-belief \
+    --resource-group $ACI_PERS_RESOURCE_GROUP \
+    --storage-name mystorage \
+    --storage-type AzureFile \
+    --azure-file-account-name <STORAGE_ACCOUNT_NAME> \
+    --azure-file-account-key <STORAGE_ACCOUNT_KEY> \
+    --azure-file-share-name <STORAGE_SHARE_NAME> \
+    --access-mode ReadWrite
+
+az containerapp create \
+    --name my-container-app-belief \
+    --resource-group my-container-apps \
+    --environment 'my-container-apps' \
+    --image utbmilbelief.azurecr.io/belief:v10 \
+    --target-port 80 \
+    --ingress external \
+    --registry-server $acrLoginServer \
+    --registry-username utbmilbelief \
+    --registry-password $REGISTRY_PASSWORD \
+    --cpu 2 --memory 4.0 \
+    --query properties.configuration.ingress.fqdn
+
+az containerapp logs show -n my-container-app-belief -g my-container-apps
+
+# works, but failed to compile stan
+az containerapp up \
+    --name my-container-app-belief \
+    --resource-group my-container-apps \
+    --location centralus \
+    --environment 'my-container-apps' \
+    --image utbmilbelief.azurecr.io/belief:v10 \
+    --target-port 80 \
+    --ingress external \
+    --query properties.configuration.ingress.fqdn
+
+
+    --dns-name-label utbmilbelief \
+    --ports 80 \
+    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
+    --azure-file-volume-account-key $STORAGE_KEY \
+    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
+    --azure-file-volume-mount-path /app/database/ \
+    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD \
+    --cpu 2 --memory 3.5
+
+az container create \
+    --name $CONTAINER_NAME \
+    --resource-group $ACI_PERS_RESOURCE_GROUP \
+
+    --image utbmilbelief.azurecr.io/belief:v10 \
+    --dns-name-label utbmilbelief \
+    --ports 80 \
+    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
+    --azure-file-volume-account-key $STORAGE_KEY \
+    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
+    --azure-file-volume-mount-path /app/database/ \
+    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD \
+    --cpu 2 --memory 3.5
+```
 
 # Old
 Prepare pieces
