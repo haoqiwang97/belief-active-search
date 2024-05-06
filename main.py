@@ -895,7 +895,7 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
     from PIL import Image
 
 
-    fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5], vertical_spacing=0.2)
+    fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5], vertical_spacing=0.5)
 
     # up
     fig.add_trace(
@@ -932,7 +932,7 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
     # down
     screen_width = 1366
     screen_height = 1024
-    scale_factor = 0.6
+    scale_factor = 0.7
 
     fig.add_trace(
         go.Scatter(
@@ -970,7 +970,7 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
     #     col=2
     # )
 
-    fig.update_layout(width=screen_width * scale_factor, height=screen_height * scale_factor * 2, 
+    fig.update_layout(width=screen_width * scale_factor, height=screen_height * scale_factor * 3, 
                       plot_bgcolor='rgba(255,255,255,0.1)', xaxis_title=None, yaxis_title=None,
                       margin=dict(l=0, r=0, t=0, b=0),
                       xaxis=dict(scaleanchor="y", scaleratio=1)
@@ -1012,10 +1012,10 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
          Input("graph-basic-2", "clickData")]
     )
     def display_image(value, clickData):
-        fig_clicked = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5], vertical_spacing=0.2)#, column_widths=[0.5, 0.5]
+        fig_clicked = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5], vertical_spacing=0.5)#, column_widths=[0.5, 0.5]
         screen_width = 1366
         screen_height = 1024
-        scale_factor = 0.6
+        scale_factor = 0.7
 
         # up
         fig_clicked.add_trace(
@@ -1052,7 +1052,7 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
                 row=1, col=1
             )
 
-        fig_clicked.update_layout(width=screen_width * scale_factor, height=screen_height * scale_factor * 2, 
+        fig_clicked.update_layout(width=screen_width * scale_factor, height=screen_height * scale_factor * 3, 
                         plot_bgcolor='rgba(255,255,255,0.1)', xaxis_title=None, yaxis_title=None,
                         margin=dict(l=0, r=0, t=0, b=0),
                         xaxis=dict(scaleanchor="y", scaleratio=1)
