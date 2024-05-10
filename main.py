@@ -985,6 +985,7 @@ def create_dash_app(dash_url, embedding, mean, imgdb_pd, trials_pd):
     anchor_points = [1] + [i * step_size + 1 for i in range(1, num_anchors - 1)] + [len(arrows_df)]  # Include first and last points
 
     app_dash.layout = html.Div([
+        html.H3(children='If you finished interview, click back button in the browser.', style={'textAlign': 'center', 'fontFamily': 'sans-serif'}),
         html.H1(children='Interview', style={'textAlign': 'center', 'fontFamily': 'sans-serif'}),
         html.H2(children='Trajectory', style={'textAlign': 'center', 'fontFamily': 'sans-serif'}),
         html.Div(
