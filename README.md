@@ -71,10 +71,10 @@ az acr show --name $ACR_NAME --query loginServer --output table
 # Tag container image
 acrLoginServer=utbmilbelief.azurecr.io
 # acrLoginServer=$(az acr show --name $ACR_NAME --query loginServer)
-docker tag belief $acrLoginServer/belief:v12
+docker tag belief $acrLoginServer/belief:v13
 
 # Push image to ACR (Azure Container Registry)
-docker push $acrLoginServer/belief:v12
+docker push $acrLoginServer/belief:v13
 
 # List images in Azure Container Registry
 az acr repository list --name $ACR_NAME --output table
@@ -113,6 +113,51 @@ CONTAINER_NAME=bmil-belief-app
 # az acr update -n utbmilbelief --admin-enabled true, 20240503
 az acr credential show --name $ACR_NAME
 REGISTRY_PASSWORD=IlsbNa0DW8+XOGSwYZub9ETUjPOXKY7Asg3caYLw7D+ACRBj+a3B
+
+################################################################################
+# type: container instances
+# first time
+az container create \
+    --resource-group $ACI_PERS_RESOURCE_GROUP \
+    --name $CONTAINER_NAME \
+    --image utbmilbelief.azurecr.io/belief:v1 \
+    --dns-name-label utbmilbelief \
+    --ports 80 \
+    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
+    --azure-file-volume-account-key $STORAGE_KEY \
+    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
+    --azure-file-volume-mount-path /app/database/ \
+    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
+
+# update container, note v1 -> v13
+# need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algorithm that needs less cpu
+az container create \
+    --resource-group $ACI_PERS_RESOURCE_GROUP \
+    --name $CONTAINER_NAME \
+    --image utbmilbelief.azurecr.io/belief:v13 \
+    --dns-name-label utbmilbelief \
+    --ports 80 \
+    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
+    --azure-file-volume-account-key $STORAGE_KEY \
+    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
+    --azure-file-volume-mount-path /app/database/ \
+    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD \
+    --cpu 2 --memory 3.5
+
+# View the application and container logs
+az container show --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --query ipAddress.fqdn
+az container logs --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME
+
+# website: utbmilbelief.eastus.azurecontainer.io
+
+# run command in container instance
+az container exec --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --exec-command "gcc --version"
+
+# stop container
+az container stop --name $CONTAINER_NAME \
+                  --resource-group $ACI_PERS_RESOURCE_GROUP
+
+################################################################################
 
 ################################################################################
 # type: container app
@@ -172,51 +217,6 @@ az containerapp update \
 
 # execute commands inside the running container
 az containerapp exec --name $CONTAINER_APP_NAME --resource-group $ACI_PERS_RESOURCE_GROUP
-################################################################################
-
-################################################################################
-# type: container instances
-# first time
-az container create \
-    --resource-group $ACI_PERS_RESOURCE_GROUP \
-    --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v1 \
-    --dns-name-label utbmilbelief \
-    --ports 80 \
-    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
-    --azure-file-volume-account-key $STORAGE_KEY \
-    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
-    --azure-file-volume-mount-path /app/database/ \
-    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
-
-# update container, note v1 -> v12
-# need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algorithm that needs less cpu
-az container create \
-    --resource-group $ACI_PERS_RESOURCE_GROUP \
-    --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v12 \
-    --dns-name-label utbmilbelief \
-    --ports 80 \
-    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
-    --azure-file-volume-account-key $STORAGE_KEY \
-    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
-    --azure-file-volume-mount-path /app/database/ \
-    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD \
-    --cpu 2 --memory 3.5
-
-# View the application and container logs
-az container show --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --query ipAddress.fqdn
-az container logs --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME
-
-# website: utbmilbelief.eastus.azurecontainer.io
-
-# run command in container instance
-az container exec --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NAME --exec-command "gcc --version"
-
-# stop container
-az container stop --name $CONTAINER_NAME \
-                  --resource-group $ACI_PERS_RESOURCE_GROUP
-
 ################################################################################
 
 # download database
