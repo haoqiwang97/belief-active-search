@@ -1,0 +1,131 @@
+id: /subscriptions/37b759b0-7a63-4557-be13-6c9983814fc1/resourceGroups/beliefResourceGroup/providers/Microsoft.App/containerapps/belief-app
+identity:
+  type: None
+location: East US
+name: belief-app
+properties:
+  configuration:
+    activeRevisionsMode: Single
+    dapr: null
+    ingress:
+      additionalPortMappings: null
+      allowInsecure: false
+      clientCertificateMode: null
+      corsPolicy: null
+      customDomains: null
+      exposedPort: 0
+      external: true
+      fqdn: belief-app.mangofield-d1cf3848.eastus.azurecontainerapps.io
+      ipSecurityRestrictions: null
+      stickySessions: null
+      targetPort: 80
+      targetPortHttpScheme: null
+      traffic:
+      - latestRevision: true
+        weight: 100
+      transport: Auto
+    maxInactiveRevisions: 100
+    registries:
+    - identity: ''
+      passwordSecretRef: utbmilbeliefazurecrio-utbmilbelief
+      server: utbmilbelief.azurecr.io
+      username: utbmilbelief
+    secrets:
+    - name: utbmilbeliefazurecrio-utbmilbelief
+    service: null
+  customDomainVerificationId: 44ADDFE2A327FA41B83423357E3C575C073687B74B5B68CCB2F96E47685CA47A
+  delegatedIdentities: []
+  environmentId: /subscriptions/37b759b0-7a63-4557-be13-6c9983814fc1/resourceGroups/beliefResourceGroup/providers/Microsoft.App/managedEnvironments/belief-environment
+  eventStreamEndpoint: https://eastus.azurecontainerapps.dev/subscriptions/37b759b0-7a63-4557-be13-6c9983814fc1/resourceGroups/beliefResourceGroup/containerApps/belief-app/eventstream
+  latestReadyRevisionName: belief-app--uzxuuil
+  latestRevisionFqdn: belief-app--uzxuuil.mangofield-d1cf3848.eastus.azurecontainerapps.io
+  latestRevisionName: belief-app--uzxuuil
+  managedEnvironmentId: /subscriptions/37b759b0-7a63-4557-be13-6c9983814fc1/resourceGroups/beliefResourceGroup/providers/Microsoft.App/managedEnvironments/belief-environment
+  outboundIpAddresses:
+  - 20.231.246.122
+  - 20.231.246.54
+  - 20.231.247.19
+  - 20.231.246.253
+  - 20.241.227.6
+  - 20.241.226.169
+  - 20.127.248.50
+  - 20.241.171.30
+  - 20.241.172.248
+  - 20.241.172.250
+  - 20.246.203.138
+  - 20.246.203.140
+  - 52.191.22.226
+  - 52.191.22.23
+  - 52.191.22.71
+  - 52.191.22.159
+  - 52.191.22.166
+  - 52.191.22.212
+  - 52.191.22.41
+  - 52.191.23.0
+  - 52.191.22.198
+  - 52.191.22.121
+  - 20.124.73.117
+  - 52.149.247.118
+  - 52.149.245.39
+  - 52.149.247.189
+  - 52.149.247.220
+  - 52.149.247.221
+  - 52.149.245.38
+  - 52.149.244.111
+  - 52.224.88.179
+  - 52.149.247.199
+  - 52.149.244.160
+  - 4.156.169.214
+  - 4.156.169.175
+  - 4.156.169.143
+  - 20.241.173.137
+  - 20.241.173.98
+  - 20.242.228.13
+  - 20.242.227.204
+  - 20.242.227.238
+  - 20.242.228.93
+  - 52.226.103.51
+  - 52.226.103.36
+  - 52.226.103.82
+  - 52.226.103.10
+  - 52.226.102.213
+  - 52.226.102.151
+  - 52.226.102.243
+  - 52.226.103.40
+  - 52.226.102.224
+  - 52.226.102.162
+  provisioningState: Succeeded
+  runningStatus: Running
+  template:
+    containers:
+    - image: utbmilbelief.azurecr.io/belief:v12
+      name: belief-app
+      volumeMounts:
+      - volumeName: belief-file-volume
+        mountPath: /app/database/
+      resources:
+        cpu: 2.0
+        ephemeralStorage: 8Gi
+        memory: 4Gi
+    initContainers: null
+    revisionSuffix: ''
+    scale:
+      maxReplicas: 1
+      minReplicas: 1
+      rules: null
+    serviceBinds: null
+    terminationGracePeriodSeconds: null
+    volumes: 
+    - name: belief-file-volume
+      storageName: beliefstoragemount
+      storageType: AzureFile
+  workloadProfileName: Consumption
+resourceGroup: beliefResourceGroup
+systemData:
+  createdAt: '2024-05-07T16:46:59.1977788'
+  createdBy: utbmil@gmail.com
+  createdByType: User
+  lastModifiedAt: '2024-05-07T16:46:59.1977788'
+  lastModifiedBy: utbmil@gmail.com
+  lastModifiedByType: User
+type: Microsoft.App/containerApps

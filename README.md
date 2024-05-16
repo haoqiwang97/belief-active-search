@@ -71,10 +71,10 @@ az acr show --name $ACR_NAME --query loginServer --output table
 # Tag container image
 acrLoginServer=utbmilbelief.azurecr.io
 # acrLoginServer=$(az acr show --name $ACR_NAME --query loginServer)
-docker tag belief $acrLoginServer/belief:v11
+docker tag belief $acrLoginServer/belief:v12
 
 # Push image to ACR (Azure Container Registry)
-docker push $acrLoginServer/belief:v11
+docker push $acrLoginServer/belief:v12
 
 # List images in Azure Container Registry
 az acr repository list --name $ACR_NAME --output table
@@ -114,6 +114,68 @@ CONTAINER_NAME=bmil-belief-app
 az acr credential show --name $ACR_NAME
 REGISTRY_PASSWORD=IlsbNa0DW8+XOGSwYZub9ETUjPOXKY7Asg3caYLw7D+ACRBj+a3B
 
+################################################################################
+# type: container app
+# https://learn.microsoft.com/en-us/azure/container-apps/storage-mounts-azure-files?tabs=bash
+STORAGE_MOUNT_NAME="beliefstoragemount"
+ENVIRONMENT_NAME="belief-environment"
+
+# first time, todo:
+az containerapp env create \
+  --name $ENVIRONMENT_NAME \
+  --resource-group $ACI_PERS_RESOURCE_GROUP \
+  --location $ACI_PERS_LOCATION \
+  --query "properties.provisioningState"
+
+# Create the storage link in the environment
+az containerapp env storage set \
+  --name $ENVIRONMENT_NAME \
+  --resource-group $ACI_PERS_RESOURCE_GROUP \
+  --access-mode ReadWrite \
+  --azure-file-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
+  --azure-file-account-key $STORAGE_KEY \
+  --azure-file-share-name $ACI_PERS_SHARE_NAME \
+  --storage-name $STORAGE_MOUNT_NAME \
+  --output table
+
+CONTAINER_APP_NAME="belief-app"
+# Create the container app
+az containerapp create \
+    --name $CONTAINER_APP_NAME \
+    --resource-group $ACI_PERS_RESOURCE_GROUP \
+    --environment $ENVIRONMENT_NAME \
+    --image utbmilbelief.azurecr.io/belief:v12 \
+    --registry-server $acrLoginServer \
+    --registry-username utbmilbelief \
+    --registry-password $REGISTRY_PASSWORD \
+    --target-port 80 \
+    --ingress external \
+    --cpu 2 --memory 4.0 \
+    --min-replicas 1 \
+    --max-replicas 1 \
+    --query properties.configuration.ingress.fqdn
+
+# belief-app.mangofield-d1cf3848.eastus.azurecontainerapps.io
+
+# Export the container app's configuration
+az containerapp show \
+  --name $CONTAINER_APP_NAME \
+  --resource-group $ACI_PERS_RESOURCE_GROUP \
+  --output yaml > app.yaml
+
+# edit app configuration
+az containerapp update \
+  --name $CONTAINER_APP_NAME \
+  --resource-group $ACI_PERS_RESOURCE_GROUP \
+  --yaml app.yaml \
+  --output table
+
+# execute commands inside the running container
+az containerapp exec --name $CONTAINER_APP_NAME --resource-group $ACI_PERS_RESOURCE_GROUP
+################################################################################
+
+################################################################################
+# type: container instances
 # first time
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
@@ -127,12 +189,12 @@ az container create \
     --azure-file-volume-mount-path /app/database/ \
     --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD
 
-# update container, note v1 -> v11
+# update container, note v1 -> v12
 # need 2 cpu, otherwise it cannot run, stan is overkill here, future may use algorithm that needs less cpu
 az container create \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
     --name $CONTAINER_NAME \
-    --image utbmilbelief.azurecr.io/belief:v11 \
+    --image utbmilbelief.azurecr.io/belief:v12 \
     --dns-name-label utbmilbelief \
     --ports 80 \
     --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
@@ -154,6 +216,8 @@ az container exec --resource-group $ACI_PERS_RESOURCE_GROUP --name $CONTAINER_NA
 # stop container
 az container stop --name $CONTAINER_NAME \
                   --resource-group $ACI_PERS_RESOURCE_GROUP
+
+################################################################################
 
 # download database
 DEST="/Users/haoqiwang/Downloads/belief.db"
@@ -177,11 +241,15 @@ Difficulties
 - Rewrite backend algorithms
 - Compile pystan in container
 
-# Solve "not secure"
+## Solve "not secure"
 2024-05-03
 https://learn.microsoft.com/en-us/azure/container-apps/get-started?tabs=bash
 
 ```zsh
+# example app
+az login
+az group create --name my-container-apps --location centralus
+
 az containerapp up \
     --name my-container-app \
     --resource-group my-container-apps \    
@@ -191,6 +259,19 @@ az containerapp up \
     --target-port 80 \
     --ingress external \
     --query properties.configuration.ingress.fqdn
+
+```
+
+
+https://learn.microsoft.com/en-us/azure/container-apps/storage-mounts-azure-files?tabs=bash
+```zsh
+RESOURCE_GROUP="my-container-apps"
+ENVIRONMENT_NAME="my-container-apps"
+LOCATION="canadacentral"
+
+az containerapp env storage show --name $ENVIRONMENT_NAME \
+                                 --resource-group $RESOURCE_GROUP \
+                                 --storage-name $STORAGE_ACCOUNT_NAME
 
 az containerapp env storage set \
     --name my-container-app-belief \
@@ -213,31 +294,14 @@ az containerapp create \
     --registry-username utbmilbelief \
     --registry-password $REGISTRY_PASSWORD \
     --cpu 2 --memory 4.0 \
+    --min-replicas 1 \
+    --max-replicas 5 \
     --query properties.configuration.ingress.fqdn
 
 az containerapp logs show -n my-container-app-belief -g my-container-apps
 
-# works, but failed to compile stan
-az containerapp up \
-    --name my-container-app-belief \
-    --resource-group my-container-apps \
-    --location centralus \
-    --environment 'my-container-apps' \
-    --image utbmilbelief.azurecr.io/belief:v10 \
-    --target-port 80 \
-    --ingress external \
-    --query properties.configuration.ingress.fqdn
 
-
-    --dns-name-label utbmilbelief \
-    --ports 80 \
-    --azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME \
-    --azure-file-volume-account-key $STORAGE_KEY \
-    --azure-file-volume-share-name $ACI_PERS_SHARE_NAME \
-    --azure-file-volume-mount-path /app/database/ \
-    --registry-login-server $acrLoginServer --registry-username utbmilbelief --registry-password $REGISTRY_PASSWORD \
-    --cpu 2 --memory 3.5
-
+# does not work, memore needs to be 4
 az container create \
     --name $CONTAINER_NAME \
     --resource-group $ACI_PERS_RESOURCE_GROUP \
@@ -254,6 +318,9 @@ az container create \
 ```
 
 # Old
+## 2024-05-03
+
+## Before 2024-05-03
 Prepare pieces
 - local, local with volume, cloud
 - simple database, can add row, display, mount to volume
