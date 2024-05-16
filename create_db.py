@@ -170,7 +170,8 @@ y FLOAT NOT NULL
 import pandas as pd
 import os
 
-perceptual_map = pd.read_csv(os.path.join(os.getcwd(), 'data/best_embedding_2023-11-13.csv'), header=None)
+perceptual_map = pd.read_csv(os.path.join(os.getcwd(), 'data/best_embedding_2024-05-02.csv'), header=None)
+# perceptual_map = pd.read_csv(os.path.join(os.getcwd(), 'data/best_embedding_2023-11-13.csv'), header=None)
 for index, row in perceptual_map.iterrows():
     cursor.execute(
     """
@@ -250,18 +251,29 @@ INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES 
 """, ("random pair selection", -1, "na", "na")
 )
 
+# cursor.execute(
+# """
+# INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
+# """, ("active pair selection", 2.037, "CONSTANT", "BT")
+# )
+# 2024-05-16
 cursor.execute(
 """
 INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
-""", ("active pair selection", 2.037, "CONSTANT", "BT")
+""", ("active pair selection", 1.7833, "CONSTANT", "BT")
 )
 
+# cursor.execute(
+# """
+# INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
+# """, ("active pair selection", 5.466, "DECAYING", "BT")
+# )
+# 2024-05-16
 cursor.execute(
 """
 INSERT INTO parameters (algorithm, k, response_model, probability_model) VALUES (?, ?, ?, ?);
-""", ("active pair selection", 5.466, "DECAYING", "BT")
+""", ("active pair selection", 4.9238, "DECAYING", "BT")
 )
-
 ############################################
 # trials
 # cursor.execute(
