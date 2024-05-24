@@ -6,22 +6,26 @@
 </h1>
 
 <h2>Participants in database</h2>
-<table class="ui striped table">
+<!-- Filter form -->
+<label for="patientNameFilter">Filter by Patient Name:</label>
+<input type="text" id="patientNameFilter" onkeyup="filterTable()" placeholder="Enter patient name">
+
+<table class="ui striped table" id="participantsTable">
     <thead>
         <tr>
-            <th>ID</th>
+            <th>Participant ID</th>
             <th>Type</th>
-            <th>Patient ID</th>
-            <th>Provider ID</th>
+            <th>Patient name</th>
+            <th>Provider name</th>
         </tr>
     </thead>
     <tbody>
         {% for participant in participants %}
         <tr>
-            <td>{{ participant.id }}</td>
+            <td>{{ "%03d" | format(participant.id) }}</td>
             <td>{{ participant.type }}</td>
-            <td>{{ participant.patient_id }}</td>
-            <td>{{ participant.provider_id }}</td>
+            <td>{{ participant.patient_name }}</td>
+            <td>{{ participant.provider_name }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -36,8 +40,9 @@
                 <thead>
                     <tr>
                         <th>Select</th> <!-- Added Select column -->
-                        <th>ID</th>
+                        <!-- <th>ID</th> -->
                         <th>Number</th>
+                        <th>Name</th>
                         <th>Language</th>
                     </tr>
                 </thead>
@@ -45,8 +50,9 @@
                     {% for patient in patients %}
                     <tr>
                         <td><input type="radio" name="selected_patient" value="{{ patient.id }}"></td>
-                        <td>{{ patient.id }}</td>
+                        <!-- <td>{{ patient.id }}</td> -->
                         <td>{{ patient.number }}</td>
+                        <td>{{ patient.name }}</td>
                         <td>{{ patient.language }}</td>
                     </tr>
                     {% endfor %}
@@ -60,7 +66,7 @@
                 <thead>
                     <tr>
                         <th>Select</th> <!-- Added Select column -->
-                        <th>ID</th>
+                        <!-- <th>ID</th> -->
                         <th>Number</th>
                         <th>Name</th>
                     </tr>
@@ -69,7 +75,7 @@
                     {% for provider in providers %}
                     <tr>
                         <td><input type="radio" name="selected_provider" value="{{ provider.id }}"></td>
-                        <td>{{ provider.id }}</td>
+                        <!-- <td>{{ provider.id }}</td> -->
                         <td>{{ provider.number }}</td>
                         <td>{{ provider.name }}</td>
                     </tr>
@@ -94,5 +100,30 @@
 
     <input type="submit" value="Create participant">
 </form>
+
+<script>
+function filterTable() {
+    // Declare variables
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById('patientNameFilter');
+    filter = input.value.toLowerCase();
+    table = document.getElementById('participantsTable');
+    tr = table.getElementsByTagName('tr');
+
+    // Loop through all table rows, and hide those who don't match the search query
+    for (i = 1; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName('td')[2]; // the 3rd column, which is the patient name
+        if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+</script>
+
 
 {% endblock %}

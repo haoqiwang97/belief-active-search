@@ -9,7 +9,7 @@
 <table class="ui striped table">
     <thead>
         <tr>
-            <th>ID</th>
+            <th>Visit ID</th>
             <th>Participant ID</th>
             <th>Date</th>
             <th>Next procedure</th>
@@ -19,7 +19,8 @@
         {% for visit in visits %}
         <tr>
             <td>{{ visit.id }}</td>
-            <td>{{ visit.participant_id }}</td>
+            <td>{{ "%03d" | format(visit.participant_id) }}</td>
+            <!-- <td>{{ visit.participant_id }}</td> -->
             <td>{{ visit.date }}</td>
             <td>{{ visit.next_procedure }}</td>
         </tr>
@@ -34,20 +35,21 @@
         <thead>
             <tr>
                 <th>Select</th>
-                <th>ID</th>
+                <th>Pariticipant ID</th>
                 <th>Type</th>
-                <th>Patient ID</th>
-                <th>Provider ID</th>
+                <th>Patient name</th>
+                <th>Provider name</th>
             </tr>
         </thead>
         <tbody>
             {% for participant in participants %}
             <tr>
                 <td><input type="radio" name="selected_participant" value="{{ participant.id }}"></td>
-                <td>{{ participant.id }}</td>
+                <td>{{ "%03d" | format(participant.id) }}</td>
+            <!-- <td>{{ participant.id }}</td> -->
                 <td>{{ participant.type }}</td>
-                <td>{{ participant.patient_id }}</td>
-                <td>{{ participant.provider_id }}</td>
+                <td>{{ participant.patient_name }}</td>
+                <td>{{ participant.provider_name }}</td>
             </tr>
             {% endfor %}
         </tbody>

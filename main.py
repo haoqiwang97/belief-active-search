@@ -98,14 +98,14 @@ def patients(request: Request):
     return templates.TemplateResponse("patientslist.html", {"request": request, "patients": patients})
 
 @app.post("/submit-patient")
-async def submit_patient(number: int = Form(...), language: str = Form(...)):
+async def submit_patient(number: int = Form(...), name: str = Form(...), language: str = Form(...)):
     connection = sqlite3.connect(config.DB_FILE)
     cursor = connection.cursor()
 
     cursor.execute(
       """
-      INSERT INTO patients (number, language) VALUES (?, ?);
-      """, (number, language)
+      INSERT INTO patients (number, name, language) VALUES (?, ?, ?);
+      """, (number, name, language)
       )
     
     connection.commit()
@@ -160,10 +160,14 @@ async def submit_participant(selected_patient: int = Form(...), selected_provide
     connection.row_factory = sqlite3.Row
 
     cursor = connection.cursor()
+    patients_pd = read_pd('patients')
+    providers_pd = read_pd('providers')
+    patient_name = patients_pd.loc[patients_pd['id'] == selected_patient, 'name'].item()
+    provider_name = providers_pd.loc[providers_pd['id'] == selected_provider, 'name'].item()
     cursor.execute(
     """
-    INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
-    """, (type, selected_patient, selected_provider)
+    INSERT INTO participants (type, patient_id, provider_id, patient_name, provider_name) VALUES (?, ?, ?, ?, ?);
+    """, (type, selected_patient, selected_provider, patient_name, provider_name)
     )
     connection.commit()
 

@@ -11,7 +11,7 @@
         <thead>
             <tr>
                 <th>Select</th>
-                <th>ID</th>
+                <th>Experiment ID</th>
                 <th>Visit ID</th>
                 <th>Parameter ID</th>
                 <th>Number of rounds</th>
@@ -70,7 +70,7 @@
         <thead>
             <tr>
                 <th>Select</th>
-                <th>ID</th>
+                <th>Visit ID</th>
                 <th>Participant ID</th>
                 <th>Date</th>
                 <th>Next procedure</th>
@@ -81,7 +81,8 @@
             <tr>
                 <td><input type="radio" name="selected_visit" value="{{ visit.id }}"></td>
                 <td>{{ visit.id }}</td>
-                <td>{{ visit.participant_id }}</td>
+                <!-- <td>{{ visit.participant_id }}</td> -->
+                <td>{{ "%03d" | format(visit.participant_id) }}</td>
                 <td>{{ visit.date }}</td>
                 <td>{{ visit.next_procedure }}</td>
             </tr>

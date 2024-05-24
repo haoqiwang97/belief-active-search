@@ -63,6 +63,7 @@ cursor.execute(
 CREATE TABLE IF NOT EXISTS patients (
 id INTEGER PRIMARY KEY,
 number INTEGER NOT NULL UNIQUE,
+name TEXT NOT NULL,
 language TEXT NOT NULL
 );
 """
@@ -70,8 +71,8 @@ language TEXT NOT NULL
 
 cursor.execute(
 """
-INSERT INTO patients (number, language) VALUES (?, ?);
-""", (1, 'English')
+INSERT INTO patients (number, name, language) VALUES (?, ?, ?);
+""", (1, 'H.W. 2024', 'English')
 )
 
 # 2 providers
@@ -88,7 +89,7 @@ name TEXT NOT NULL
 cursor.execute(
 """
 INSERT INTO providers (number, name) VALUES (?, ?);
-""", (1, 'Wang')
+""", (1, 'Reece')
 )
 
 # 3 participants
@@ -99,6 +100,8 @@ id INTEGER PRIMARY KEY,
 type TEXT NOT NULL,
 patient_id INTEGER NOT NULL,
 provider_id INTEGER NOT NULL,
+patient_name TEXT NOT NULL,
+provider_name TEXT NOT NULL,
 FOREIGN KEY(patient_id) REFERENCES patients(id),
 FOREIGN KEY(provider_id) REFERENCES providers(id),
 UNIQUE (type, patient_id, provider_id)
@@ -108,14 +111,14 @@ UNIQUE (type, patient_id, provider_id)
 
 cursor.execute(
 """
-INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
-""", ('provider', 1, 1)
+INSERT INTO participants (type, patient_id, provider_id, patient_name, provider_name) VALUES (?, ?, ?, ?, ?);
+""", ('provider', 1, 1, 'H.W. 2024', 'Reece')
 )
 
 cursor.execute(
 """
-INSERT INTO participants (type, patient_id, provider_id) VALUES (?, ?, ?);
-""", ('patient', 1, 1)
+INSERT INTO participants (type, patient_id, provider_id, patient_name, provider_name) VALUES (?, ?, ?, ?, ?);
+""", ('patient', 1, 1, 'H.W. 2024', 'Reece')
 )
 
 # 4 visits
