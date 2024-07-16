@@ -72,7 +72,7 @@ language TEXT NOT NULL
 cursor.execute(
 """
 INSERT INTO patients (number, name, language) VALUES (?, ?, ?);
-""", (1, 'H.W. 2024', 'English')
+""", (1, 'HW2024', 'English')
 )
 
 # 2 providers
@@ -112,13 +112,13 @@ UNIQUE (type, patient_id, provider_id)
 cursor.execute(
 """
 INSERT INTO participants (type, patient_id, provider_id, patient_name, provider_name) VALUES (?, ?, ?, ?, ?);
-""", ('provider', 1, 1, 'H.W. 2024', 'Reece')
+""", ('provider', 1, 1, 'HW2024', 'Reece')
 )
 
 cursor.execute(
 """
 INSERT INTO participants (type, patient_id, provider_id, patient_name, provider_name) VALUES (?, ?, ?, ?, ?);
-""", ('patient', 1, 1, 'H.W. 2024', 'Reece')
+""", ('patient', 1, 1, 'HW2024', 'Reece')
 )
 
 # 4 visits
